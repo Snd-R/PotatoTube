@@ -4,19 +4,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
-import org.jetbrains.compose.resources.LoadState
 import org.snd.cytube.CytubeClient
-import org.snd.settings.CytubeState
 import org.snd.settings.Settings
 import org.snd.settings.SettingsRepository
 
 class SettingsModel(
     private val settingsRepository: SettingsRepository,
     private val cytube: CytubeClient,
-    val cytubeState: CytubeState,
 ) {
-    var currentTab by mutableStateOf(CurrentTab.CHAT)
+    var isActiveScreen by mutableStateOf(false)
 
+    var currentTab by mutableStateOf(CurrentTab.CHAT)
     var fontSize by mutableStateOf(13.sp)
     var emoteSize by mutableStateOf(120.sp)
     var timestampFormat by mutableStateOf("")
@@ -26,7 +24,11 @@ class SettingsModel(
 
     var username by mutableStateOf<String?>(null)
     var password by mutableStateOf<String?>(null)
+
+    var syncThreshold by mutableStateOf(2000L)
+
     var isLoading by mutableStateOf(false)
+
 
     suspend fun save() {
         settingsRepository.saveSettings(
@@ -41,11 +43,14 @@ class SettingsModel(
         )
     }
 
-    fun logout() {
-        cytube.logout()
+    suspend fun logout() {
+        cytube.disconnectFromChannel()
         username?.let { settingsRepository.deletePassword(it) }
         this.username = null
         this.password = null
+        val channelName = channel
+        if (channelName != null)
+            cytube.joinChannel(channelName)
     }
 
     fun disconnect() {
@@ -54,9 +59,15 @@ class SettingsModel(
 
     }
 
-    fun changeChannel(channelName: String) {
+    suspend fun changeChannel(channelName: String) {
+        channel = null
+        cytube.joinChannel(channelName)
         channel = channelName
-        cytube.changeChannel(channelName)
+
+        val username = username
+        val password = password
+        if (username != null && password != null)
+            cytube.login(username, password)
     }
 
     fun persistCredentials(username: String, password: String) {
@@ -65,7 +76,7 @@ class SettingsModel(
         settingsRepository.setPassword(username, password)
     }
 
-    suspend fun login(username: String, password: String): LoadState<String> {
+    suspend fun login(username: String, password: String): String {
         return cytube.login(username, password)
     }
 
@@ -74,6 +85,6 @@ class SettingsModel(
         CHAT,
         ACCOUNT,
         CHANNEL,
-        LOADING
+        PLAYBACK
     }
 }

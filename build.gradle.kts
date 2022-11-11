@@ -37,6 +37,7 @@ dependencies {
     implementation("net.coobird:thumbnailator:0.4.18")
     implementation("org.apache.tika:tika-core:2.4.1")
     implementation("uk.co.caprica:vlcj:4.8.2")
+    implementation("org.jsoup:jsoup:1.15.3")
 
 }
 

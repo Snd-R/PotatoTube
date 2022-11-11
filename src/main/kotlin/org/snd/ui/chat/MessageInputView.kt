@@ -13,10 +13,11 @@ import java.util.*
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MessageInputView(
-    model: MessageInput,
-    options: List<String>,
+    chat: Chat,
+//    options: List<String>,
     sendMessage: (message: String) -> Unit
 ) {
+    val model = chat.messageInput
     OutlinedTextField(
         value = model.message,
         onValueChange = {
@@ -64,7 +65,7 @@ fun MessageInputView(
                     }
 
                     it.key == Key.Tab && it.type == KeyEventType.KeyDown -> {
-                        model.tabCompletion(options)
+                        model.tabCompletion(chat.completionOptions())
                         true
                     }
 

@@ -3,45 +3,80 @@ package org.snd.ui.videoplayer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import org.snd.ui.settings.SettingsModel
+import java.time.Duration
+import kotlin.math.absoluteValue
 
-class VideoPlayerState {
-    internal val lengthMutable = MutableStateFlow(VideoLength())
+class VideoPlayerState(
+    private val settingsModel: SettingsModel
+) {
 
-    val time: MutableStateFlow<TimeState> = MutableStateFlow(TimeState.time(0))
-    val isPlaying: MutableStateFlow<Boolean> = MutableStateFlow(true)
-    val length: StateFlow<VideoLength> = lengthMutable
+    var time = TimeState()
+    var isPlaying by mutableStateOf(true)
+    var length by mutableStateOf(-1L)
+    var volume by mutableStateOf(50)
+    var isMuted by mutableStateOf(false)
+
     var mrl by mutableStateOf<String?>(null)
 
     fun seekTo(time: Long) {
-        this.time.value = TimeState.time(time)
+        this.time.update(time)
     }
+
     fun play() {
-        isPlaying.value = true
+        isPlaying = true
     }
+
     fun pause() {
-        isPlaying.value = false
+        isPlaying = false
+    }
+
+    fun toggleMute() {
+        isMuted = !isMuted
+    }
+
+    fun sync(newTime: Long, paused: Boolean) {
+        val timeDiff = (newTime - time.value).absoluteValue
+        if (timeDiff > settingsModel.syncThreshold)
+            time.update(newTime)
+
+        if (!paused && !isPlaying) play()
+        else if (paused && isPlaying) pause()
+    }
+
+    fun lengthString(): String {
+        return durationString(length)
+    }
+
+    fun currentTimeString(): String {
+        return durationString(time.value)
+    }
+
+    private fun durationString(millis: Long): String {
+        val duration = Duration.ofMillis(millis)
+        val secondsPart = duration.toSecondsPart()
+        val secondsPartString = if (secondsPart < 10) "0$secondsPart"
+        else secondsPart.toString()
+        return if (duration.toHoursPart() == 0)
+            "${duration.toMinutesPart()}:$secondsPartString"
+        else "${duration.toHoursPart()}:${duration.toMinutesPart()}:$secondsPartString"
     }
 }
 
-data class VideoLength(
-    val length: Long = -1L
-) {
-    fun isKnown() = length != -1L
-}
+class TimeState {
+    var value by mutableStateOf(0L)
+        private set
 
-data class TimeState internal constructor(
-    val time: Long,
-    internal val updatedInternally: Boolean,
-) {
-    companion object {
-        fun time(time: Long): TimeState {
-            return TimeState(time, false)
-        }
+    // track external updates that are not from video player natural playback
+    var updatedExternallyToggle by mutableStateOf(false)
+        private set
 
-        internal fun internalTime(time: Long): TimeState {
-            return TimeState(time, true)
-        }
+    fun update(time: Long) {
+        this.value = time
+        this.updatedExternallyToggle = !this.updatedExternallyToggle
+    }
+
+    fun updateInternally(time: Long) {
+        this.value = time
     }
 }

@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -26,22 +24,12 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType.Companion.Scroll
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.snd.ui.common.AppTheme
-import org.snd.ui.image.EmoteImage
 import org.snd.ui.settings.SettingsModel
+import org.snd.ui.settings.SettingsView
 import org.snd.ui.util.VerticalScrollbar
-import java.time.ZoneOffset.UTC
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -49,65 +37,73 @@ import java.util.*
 fun ChatView(model: Chat, settings: SettingsModel) = Surface(
     modifier = Modifier.fillMaxSize()
 ) {
-    Column {
-        ChannelBar(model)
-        Divider()
-        Row(modifier = Modifier.weight(1f)) {
-            UserList(model)
-            Divider(
-                modifier = Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-            )
-            MessageBox(model, settings)
+    if (model.settings.isActiveScreen) {
+        Box(
+            Modifier
+                .fillMaxSize()
+        ) {
+            SettingsView(model.settings)
         }
-        Column(modifier = Modifier.background(AppTheme.colors.backgroundDarker)) {
-            MessageInputView(
-                model = model.messageInput,
-                model.completionOptions()
-            ) {
-                model.sendMessage(it)
+    } else {
+        println("recomposing chat view")
+        Column {
+            ChannelBar(model)
+            Divider()
+            Row(modifier = Modifier.weight(1f)) {
+                UserList(model)
+                Divider(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .fillMaxHeight()
+                )
+                MessageBox(model, settings)
             }
-//            SendMessageBox(model)
-            var emoteMenu by remember { mutableStateOf(false) }
+            Column(modifier = Modifier.background(AppTheme.colors.backgroundDarker)) {
+                MessageInputView(
+                    chat = model,
+                ) {
+                    model.sendMessage(it)
+                }
+                var emoteMenu by remember { mutableStateOf(false) }
 
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(vertical = 5.dp, horizontal = 3.dp)
-                    .heightIn(max = 400.dp)
-            ) {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = Color.LightGray,
+                Row(
                     modifier = Modifier
-                        .width(30.dp)
-                        .height(30.dp)
-                        .clickable {
-                            model.currentScreen = Chat.CurrentScreen.SETTINGS
-                        }
-                )
-                Spacer(modifier = Modifier.size(10.dp))
-                Icon(
-                    Icons.Default.Mood,
-                    contentDescription = "Emotes",
-                    tint = if (emoteMenu) AppTheme.colors.buttonActive else Color.LightGray,
-                    modifier = Modifier
-                        .width(30.dp)
-                        .height(30.dp)
-                        .clickable(enabled = model.channelEmotes.isNotEmpty()) {
-                            emoteMenu = !emoteMenu
-                        }
-                )
-
-                if (emoteMenu) {
-                    Box(
+                        .align(Alignment.Start)
+                        .padding(vertical = 5.dp, horizontal = 3.dp)
+                        .heightIn(max = 400.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = Color.LightGray,
                         modifier = Modifier
-                            .heightIn(min = 0.dp, max = 400.dp)
-                            .widthIn(min = 0.dp, max = 600.dp)
-                    ) {
-                        EmoteMenuView(model)
+                            .width(30.dp)
+                            .height(30.dp)
+                            .clickable {
+                                model.settings.isActiveScreen = true
+                            }
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    Icon(
+                        Icons.Default.Mood,
+                        contentDescription = "Emotes",
+                        tint = if (emoteMenu) AppTheme.colors.buttonActive else Color.LightGray,
+                        modifier = Modifier
+                            .width(30.dp)
+                            .height(30.dp)
+                            .clickable(enabled = model.channelEmotes.isNotEmpty()) {
+                                emoteMenu = !emoteMenu
+                            }
+                    )
+
+                    if (emoteMenu) {
+                        Box(
+                            modifier = Modifier
+                                .heightIn(min = 0.dp, max = 400.dp)
+                                .widthIn(min = 0.dp, max = 600.dp)
+                        ) {
+                            EmoteMenuView(model)
+                        }
                     }
                 }
             }
@@ -118,6 +114,7 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun MessageBox(model: Chat, settings: SettingsModel) {
+    println("recomposing message box")
     with(LocalDensity.current) {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -128,17 +125,17 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
                 }
         ) {
             val scrollState = rememberLazyListState()
-            LazyColumn(state = scrollState) {
+            LazyColumn(state = scrollState) { //TODO use regular column to cache images and avoid recompositions on new message?
                 items(model.messages.size) {
                     SelectionContainer {
-                        ChatMessageView(
+                        ChatMessage(
                             settings.fontSize,
                             settings.emoteSize,
                             20.sp.toDp() * 1.5f,
                             it,
                             model.messages[it],
                             model,
-                            settings
+                            settings.timestampFormat
                         )
                     }
                 }
@@ -159,60 +156,6 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
                     scrollState.animateScrollToItem(model.messages.size - 1)
             }
         }
-    }
-}
-
-@Composable
-private fun ChatMessageView(
-    fontSize: TextUnit,
-    emoteSize: TextUnit,
-    height: Dp,
-    index: Int,
-    message: Chat.Message,
-    model: Chat,
-    settings: SettingsModel
-) {
-    val timestamp = DateTimeFormatter.ofPattern(settings.timestampFormat)
-        .withZone(UTC)
-        .format(message.timestamp)
-
-    val annotatedString = buildAnnotatedString {
-        append("[$timestamp] ")
-        withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
-            append(message.user)
-        }
-        append(":")
-        message.message.split(" ").map { token ->
-            val emote = model.channelEmotes[token]
-            if (emote != null) {
-                append(" ")
-                appendInlineContent(id = emote.name, alternateText = emote.name)
-            } else append(" $token")
-        }
-    }
-
-    val inlineContentMap = model.channelEmotes.values.associate { emote ->
-        val emoteHeight = emote.height?.let { (it.coerceAtMost(emoteSize.value.toInt()).sp) } ?: emoteSize
-        val emoteWidth = emote.width?.let { (it.coerceAtMost(emoteSize.value.toInt()).sp) } ?: emoteSize
-        emote.name to InlineTextContent(Placeholder(emoteWidth, emoteHeight, PlaceholderVerticalAlign.Center)) {
-            EmoteImage(emote, model)
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .heightIn(min = height)
-            .fillMaxWidth()
-            .background((if (index % 2 == 0) AppTheme.colors.backgroundMedium else AppTheme.colors.backgroundDark))
-    ) {
-        Text(
-            annotatedString,
-            inlineContent = inlineContentMap,
-            modifier = Modifier
-                .align(Alignment.TopStart),
-            softWrap = true,
-            fontSize = fontSize,
-        )
     }
 }
 

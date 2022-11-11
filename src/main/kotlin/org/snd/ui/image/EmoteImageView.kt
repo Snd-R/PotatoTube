@@ -47,8 +47,8 @@ fun EmoteImage(emote: Chat.Emote, model: Chat) {
                 when (val image = model.imageLoader.getImage(emote.url)) {
                     is Result.Error -> {
                         state.value = LoadState.Error(image.exception)
-                        emote.height = 60
-                        emote.width = 60
+                        emote.height = 60f
+                        emote.width = 60f
                     }
 
                     is Result.Success -> {
@@ -64,8 +64,8 @@ fun EmoteImage(emote: Chat.Emote, model: Chat) {
                 }
             } catch (e: Exception) {
                 state.value = LoadState.Error(e)
-                emote.height = 60
-                emote.width = 60
+                emote.height = 60f
+                emote.width = 60f
             }
         }
     }

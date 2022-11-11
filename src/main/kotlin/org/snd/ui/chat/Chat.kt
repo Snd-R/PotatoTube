@@ -7,21 +7,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.snd.cytube.CytubeClient
 import org.snd.image.ImageLoader
-import org.snd.settings.CytubeState
 import org.snd.ui.settings.SettingsModel
 import java.time.Instant
 
 class Chat(
     private val cytube: CytubeClient,
-    val cytubeState: CytubeState,
-    private val settings: SettingsModel,
+    val settings: SettingsModel,
     val imageLoader: ImageLoader,
 ) {
+    var connected by mutableStateOf(false)
+    var connectionErrorReason by mutableStateOf<String?>(null)
+
     var scrolledUp by mutableStateOf(false)
     val messages: MutableList<Message> = mutableStateListOf()
     val channelEmotes = mutableStateMapOf<String, Emote>()
     var users = Users()
-    var currentScreen by mutableStateOf(CurrentScreen.MAIN)
 
     val messageInput = MessageInput()
 
@@ -31,12 +31,9 @@ class Chat(
     }
 
     fun sendMessage(message: String) {
-        if (!settings.cytubeState.authenticated) cytube.anonymousLogin(message)
-        else {
-            cytube.sendMessage(message)
-            messageInput.sentMessages.add(message)
-            messageInput.lastArrowCompletionIndex = null
-        }
+        cytube.sendMessage(message)
+        messageInput.sentMessages.add(message)
+        messageInput.lastArrowCompletionIndex = null
     }
 
     fun reset() {
@@ -57,7 +54,7 @@ class Chat(
         emotes.forEach { emote -> channelEmotes[emote.name] = emote }
     }
 
-    class Message(
+    data class Message(
         val timestamp: Instant,
         val user: String,
         val message: String,
@@ -67,8 +64,8 @@ class Chat(
         val name: String,
         val url: String,
     ) {
-        var height by mutableStateOf<Int?>(null)
-        var width by mutableStateOf<Int?>(null)
+        var height by mutableStateOf<Float?>(null)
+        var width by mutableStateOf<Float?>(null)
     }
 
     class User(
@@ -162,10 +159,5 @@ class Chat(
         MODERATOR,
         CHANNEL_ADMIN,
         SITE_ADMIN,
-    }
-
-    enum class CurrentScreen {
-        MAIN,
-        SETTINGS
     }
 }
