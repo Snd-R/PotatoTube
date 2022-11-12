@@ -31,26 +31,27 @@ fun ChannelBar(model: Chat) {
             modifier = Modifier
                 .padding(horizontal = 5.dp, vertical = 5.dp),
         ) {
+            val currentChannel = model.userStatus.currentChannel
             Box(
                 modifier = Modifier
                     .clickable { }
                     .background(AppTheme.colors.backgroundDark)
             ) {
-                val channelName = model.settings.channel
-                val currentChannel = if (model.connected && channelName != null) channelName
-                else "Not connected"
-                Text(currentChannel)
+                val channelLabel = currentChannel ?: "Not connected"
+                Text(channelLabel)
             }
             TooltipArea(tooltip = { ConnectedUsersTooltip(model.users) }) {
-                val users = if (model.users.userCount == 1) "user" else "users"
-                Text("${model.users.userCount} connected $users", fontSize = 13.sp)
+                if (currentChannel != null) {
+                    val users = if (model.users.userCount == 1) "user" else "users"
+                    Text("${model.users.userCount} connected $users", fontSize = 13.sp)
+                }
             }
         }
 
-        val connectionErrorReason = model.connectionErrorReason
-        if (!model.connected && connectionErrorReason != null) {
+        val connectionErrorReason = model.userStatus.disconnectReason
+        if (connectionErrorReason != null) {
             Text(
-                text = "Disconnected: $connectionErrorReason",
+                text = "$connectionErrorReason",
                 style = TextStyle(
                     color = MaterialTheme.colors.error,
                     fontWeight = FontWeight.Bold
@@ -70,8 +71,7 @@ fun ConnectedUsersTooltip(model: Chat.Users) {
             .background(AppTheme.colors.backgroundDark)
             .padding(5.dp)
     ) {
-        Column(
-        ) {
+        Column {
             Text("Site Admins: ${model.siteAdmins}", fontSize = 13.sp)
             Text("Channel Admins: ${model.channelAdmins}", fontSize = 13.sp)
             Text("Moderators: ${model.moderators}", fontSize = 13.sp)

@@ -19,6 +19,7 @@ import org.snd.image.ImageLoaderImpl
 import org.snd.settings.SettingsRepository
 import org.snd.ui.Channel
 import org.snd.ui.MainView
+import org.snd.ui.UserStatus
 import org.snd.ui.settings.SettingsModel
 
 fun main() = singleWindowApplication(
@@ -47,11 +48,12 @@ private fun createModel(): Channel {
 
     val cytubeClient = CytubeClient(httpClient)
     val settingsRepository = SettingsRepository()
+    val userStatus = UserStatus()
 
     val settings = runBlocking {
         val config = settingsRepository.loadSettings()
         val userPassword = config.accountName?.let { settingsRepository.loadPassword(it) }
-        SettingsModel(settingsRepository, cytubeClient).apply {
+        SettingsModel(userStatus, settingsRepository, cytubeClient).apply {
             fontSize = config.fontSize.sp
             timestampFormat = config.timestampFormat
             emoteSize = config.emoteSize.sp
@@ -63,6 +65,7 @@ private fun createModel(): Channel {
     }
 
     return Channel(
+        userStatus = userStatus,
         settings = settings,
         cytube = cytubeClient,
         imageLoader = imageLoader

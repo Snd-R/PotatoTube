@@ -7,20 +7,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.snd.cytube.CytubeClient
 import org.snd.image.ImageLoader
+import org.snd.ui.UserStatus
 import org.snd.ui.settings.SettingsModel
 import java.time.Instant
 
 class Chat(
     private val cytube: CytubeClient,
     val settings: SettingsModel,
+    val userStatus: UserStatus,
     val imageLoader: ImageLoader,
 ) {
-    var connected by mutableStateOf(false)
-    var connectionErrorReason by mutableStateOf<String?>(null)
-
     var scrolledUp by mutableStateOf(false)
     val messages: MutableList<Message> = mutableStateListOf()
     val channelEmotes = mutableStateMapOf<String, Emote>()
+    val customEmotes = mutableStateMapOf<String, Emote>()
     var users = Users()
 
     val messageInput = MessageInput()
@@ -52,6 +52,10 @@ class Chat(
     fun setEmotes(emotes: List<Emote>) {
         channelEmotes.clear()
         emotes.forEach { emote -> channelEmotes[emote.name] = emote }
+    }
+
+    suspend fun login(username: String) {
+        cytube.login(username, null)
     }
 
     data class Message(

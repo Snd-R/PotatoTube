@@ -15,9 +15,7 @@ object ImageAnalyzer {
                 if (readers.hasNext()) {
                     val reader = readers.next()
                     reader.input = fis
-                    val test = Dimension(reader.getWidth(0).toFloat(), reader.getHeight(0).toFloat())
-                    logger.info { "image dimensions $test" }
-                    test
+                    Dimension(reader.getWidth(0).toFloat(), reader.getHeight(0).toFloat())
                 } else {
                     null
                 }

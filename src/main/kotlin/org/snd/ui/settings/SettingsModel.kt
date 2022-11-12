@@ -7,8 +7,10 @@ import androidx.compose.ui.unit.sp
 import org.snd.cytube.CytubeClient
 import org.snd.settings.Settings
 import org.snd.settings.SettingsRepository
+import org.snd.ui.UserStatus
 
 class SettingsModel(
+    val userStatus: UserStatus,
     private val settingsRepository: SettingsRepository,
     private val cytube: CytubeClient,
 ) {
@@ -21,7 +23,6 @@ class SettingsModel(
     var historySize by mutableStateOf(0)
 
     var channel by mutableStateOf<String?>(null)
-
     var username by mutableStateOf<String?>(null)
     var password by mutableStateOf<String?>(null)
 
@@ -49,8 +50,11 @@ class SettingsModel(
         this.username = null
         this.password = null
         val channelName = channel
-        if (channelName != null)
+
+        if (channelName != null) {
             cytube.joinChannel(channelName)
+            userStatus.currentChannel = channelName
+        }
     }
 
     fun disconnect() {
@@ -61,7 +65,9 @@ class SettingsModel(
 
     suspend fun changeChannel(channelName: String) {
         channel = null
+        userStatus.currentChannel = null
         cytube.joinChannel(channelName)
+        userStatus.currentChannel = channelName
         channel = channelName
 
         val username = username

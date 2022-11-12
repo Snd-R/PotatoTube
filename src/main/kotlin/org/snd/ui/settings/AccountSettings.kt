@@ -24,17 +24,19 @@ import org.jetbrains.compose.resources.LoadState
 fun AccountSettings(model: SettingsModel) {
     val coroutineScope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        val currentUser = model.username ?: model.userStatus.currentUser
         Row {
             Column {
                 Text("Account Settings")
-                val currentUser = if (model.username != null) "Current user: ${model.username}"
-                else "Not user configured"
-                Text(currentUser)
+                val currentUserText = currentUser?.let { "Current user: $it" }
+                    ?: "Not logged in"
+
+                Text(currentUserText)
             }
         }
 
         Divider()
-        if (model.username != null) {
+        if (currentUser != null) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Button(onClick = {
                     model.isLoading = true

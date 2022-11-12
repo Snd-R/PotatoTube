@@ -12,7 +12,12 @@ class CytubeEventHandler(
         channel.chat.addMessage(message)
     }
 
-    fun onLogin() {
+    fun onLoginSuccess(name: String, isGuest: Boolean = false) {
+        channel.userStatus.currentUser = name
+        channel.userStatus.isGuest = isGuest
+    }
+
+    fun onLoginFailure() {
 
     }
 

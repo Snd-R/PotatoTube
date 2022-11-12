@@ -8,7 +8,6 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -42,14 +41,13 @@ fun ChatMessage(
     model: Chat,
     timestampFormat: String,
 ) {
-    println("composing message $message")
     val messageDocument = Jsoup.parse(message.message, Parser.xmlParser())
 
     val timestamp = DateTimeFormatter.ofPattern(timestampFormat)
         .withZone(UTC)
         .format(message.timestamp)
 
-    val customEmotes = remember { mutableSetOf<Chat.Emote>() }
+    val customEmotes = mutableSetOf<Chat.Emote>()
     val annotatedString = buildAnnotatedString {
         append("[$timestamp] ")
         withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
@@ -75,10 +73,14 @@ fun ChatMessage(
             }
         }
     }
+    val messageCustomEmotes = customEmotes.map {
+        model.customEmotes[it.url]
+            ?: (it.also { model.customEmotes[it.url] = it })
+    }
 
     // we don't know emote dimensions since it's not loaded yet, but we have to set placeholder size
     // after emote is loaded we store emote dimensions and recompose with proper placeholder size
-    val inlineContentMap = (model.channelEmotes.values + customEmotes).associate { emote ->
+    val inlineContentMap = (model.channelEmotes.values + messageCustomEmotes).associate { emote ->
         val emoteHeight = emote.height
         val emoteWidth = emote.width
         val (actualWidth, actualHeight) = if (emoteHeight != null && emoteWidth != null) {
@@ -108,7 +110,7 @@ fun ChatMessage(
 }
 
 fun AnnotatedString.Builder.appendCustomEmote(url: String): Chat.Emote {
-    appendInlineContent(id = url, alternateText = "Custom Emote")
+    appendInlineContent(id = url, alternateText = url)
     return Chat.Emote(name = url, url = url)
 }
 

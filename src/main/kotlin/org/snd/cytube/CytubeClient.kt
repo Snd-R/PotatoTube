@@ -153,7 +153,9 @@ class CytubeClient(
             val response = it[0] as JSONObject
             val success = response.getBoolean("success")
             if (success) {
-                eventHandler.onLogin()
+                val name = response.getString("name")
+                val isGuest = response.optBoolean("guest")
+                eventHandler.onLoginSuccess(name, isGuest)
             }
         }
 

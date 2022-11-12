@@ -2,80 +2,124 @@ package org.snd.ui.chat
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.LoadState
 import java.util.*
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun MessageInputView(
-    chat: Chat,
-//    options: List<String>,
-    sendMessage: (message: String) -> Unit
-) {
+fun MessageInputView(chat: Chat) {
     val model = chat.messageInput
-    OutlinedTextField(
-        value = model.message,
-        onValueChange = {
-            model.message = it
-            model.completionContext = null
-        },
-        label = { Text(text = "Send a message") },
-        modifier = Modifier
-            .fillMaxWidth()
-            .onPreviewKeyEvent {
-                when {
-                    it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {
-                        sendMessage(model.message())
-                        model.setMessage("")
-                        true
-                    }
+    val coroutineScope = rememberCoroutineScope()
+    val label =
+        if (chat.userStatus.currentUser == null && chat.userStatus.currentChannel != null) "Guest login"
+        else "Send a message"
 
-                    it.key == Key.DirectionUp && it.type == KeyEventType.KeyDown -> {
-                        val lastIndex = model.lastArrowCompletionIndex
-                        if (lastIndex == null) {
-                            if (model.sentMessages.isNotEmpty()) {
-                                val index = model.sentMessages.size - 1
-                                model.setMessage(model.sentMessages[index])
-                                model.lastArrowCompletionIndex = index
+    var loadState by remember { mutableStateOf<LoadState<Unit>>(LoadState.Success(Unit)) }
+    val isInputEnabled =
+        remember { derivedStateOf { loadState !is LoadState.Loading && chat.userStatus.currentChannel != null } }
+
+    Column {
+        OutlinedTextField(
+            value = model.message,
+            onValueChange = {
+                model.message = it
+                model.completionContext = null
+            },
+            label = { Text(text = label) },
+            enabled = isInputEnabled.value,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onPreviewKeyEvent {
+                    when {
+                        it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {
+                            if (chat.userStatus.connectedAndAuthenticated()) {
+                                chat.sendMessage(model.message())
+                                model.setMessage("")
+                            } else coroutineScope.launch {
+                                loadState = LoadState.Loading()
+                                loadState = try {
+                                    chat.login(model.message())
+                                    LoadState.Success(Unit)
+                                } catch (e: Exception) {
+                                    LoadState.Error(e)
+                                }
+                                model.setMessage("")
                             }
-                        } else if (lastIndex > 0) {
-//                            val index = (currentIndex - 1).coerceAtLeast(0)
-                            model.setMessage(model.sentMessages[lastIndex - 1])
-                            model.lastArrowCompletionIndex = lastIndex - 1
+
+                            true
                         }
-                        true
-                    }
 
-                    it.key == Key.DirectionDown && it.type == KeyEventType.KeyDown -> {
-                        val currentIndex = model.lastArrowCompletionIndex
-                        if (currentIndex != null && currentIndex < model.sentMessages.size - 1) {
-                            model.setMessage(model.sentMessages[currentIndex + 1])
-                            model.lastArrowCompletionIndex = currentIndex + 1
+                        it.key == Key.DirectionUp && it.type == KeyEventType.KeyDown -> {
+                            val lastIndex = model.lastArrowCompletionIndex
+                            if (lastIndex == null) {
+                                if (model.sentMessages.isNotEmpty()) {
+                                    val index = model.sentMessages.size - 1
+                                    model.setMessage(model.sentMessages[index])
+                                    model.lastArrowCompletionIndex = index
+                                }
+                            } else if (lastIndex > 0) {
+                                model.setMessage(model.sentMessages[lastIndex - 1])
+                                model.lastArrowCompletionIndex = lastIndex - 1
+                            }
+                            true
                         }
-                        true
-                    }
 
-                    it.key == Key.Tab && it.type == KeyEventType.KeyUp -> {
-                        true
-                    }
+                        it.key == Key.DirectionDown && it.type == KeyEventType.KeyDown -> {
+                            val currentIndex = model.lastArrowCompletionIndex
+                            if (currentIndex != null && currentIndex < model.sentMessages.size - 1) {
+                                model.setMessage(model.sentMessages[currentIndex + 1])
+                                model.lastArrowCompletionIndex = currentIndex + 1
+                            }
+                            true
+                        }
 
-                    it.key == Key.Tab && it.type == KeyEventType.KeyDown -> {
-                        model.tabCompletion(chat.completionOptions())
-                        true
-                    }
+                        it.key == Key.Tab && it.type == KeyEventType.KeyUp -> {
+                            true
+                        }
 
-                    // TODO implement workaround for ctrl + backspace on empty textfield https://github.com/JetBrains/compose-jb/issues/565 - still not fixed
+                        it.key == Key.Tab && it.type == KeyEventType.KeyDown -> {
+                            model.tabCompletion(chat.completionOptions())
+                            true
+                        }
+
+                        // TODO implement workaround for ctrl + backspace on empty textfield https://github.com/JetBrains/compose-jb/issues/565 - still not fixed
 //                    it.isCtrlPressed && it.key == Key.Backspace && it.type == KeyEventType.KeyDown -> {
 //                        true
 //                    }
 
-                    else -> false
+                        else -> false
+                    }
                 }
+        )
+        LaunchedEffect(loadState) {
+            if (loadState is LoadState.Error) {
+                delay(5000)
+                loadState = LoadState.Success(Unit)
             }
-    )
+        }
+
+        when (val state = loadState) {
+            is LoadState.Error -> Text(
+                text = "${state.exception.message}",
+                style = TextStyle(
+                    color = MaterialTheme.colors.error,
+                    fontWeight = FontWeight.Bold
+                ),
+            )
+
+            is LoadState.Loading -> {}
+            is LoadState.Success -> {}
+        }
+    }
 }

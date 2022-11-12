@@ -45,7 +45,6 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
             SettingsView(model.settings)
         }
     } else {
-        println("recomposing chat view")
         Column {
             ChannelBar(model)
             Divider()
@@ -59,11 +58,7 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
                 MessageBox(model, settings)
             }
             Column(modifier = Modifier.background(AppTheme.colors.backgroundDarker)) {
-                MessageInputView(
-                    chat = model,
-                ) {
-                    model.sendMessage(it)
-                }
+                MessageInputView(chat = model)
                 var emoteMenu by remember { mutableStateOf(false) }
 
                 Row(
@@ -114,7 +109,6 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun MessageBox(model: Chat, settings: SettingsModel) {
-    println("recomposing message box")
     with(LocalDensity.current) {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -151,7 +145,7 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
             }
             if (endOfListReached) model.scrolledUp = false
 
-            LaunchedEffect(model.messages.size) {
+            LaunchedEffect(model.messages.size, endOfListReached) {
                 if (model.messages.isNotEmpty() && !model.scrolledUp)
                     scrollState.animateScrollToItem(model.messages.size - 1)
             }
