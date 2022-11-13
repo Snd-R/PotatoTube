@@ -7,8 +7,13 @@ object ContentDetector {
 
     private val tika: TikaConfig = TikaConfig()
 
-    fun isSupportedImage(data: ByteArray): Boolean {
-        val mediaType = tika.detector.detect(data.inputStream(), Metadata()).toString()
-        return mediaType.startsWith("image/")
-    }
+    fun getMediaType(data: ByteArray) = tika.detector.detect(data.inputStream(), Metadata()).toString()
+
+    fun isSupported(data: ByteArray) = isSupportedMediaType(getMediaType(data))
+
+    fun isSupportedMediaType(type: String) = type.startsWith("image/")
+
+    fun isAnimated(type: String) = type == "image/gif"
+
+    fun toImageType(mediaType: String) = ImageType.values().firstOrNull { it.mediaType == mediaType }
 }

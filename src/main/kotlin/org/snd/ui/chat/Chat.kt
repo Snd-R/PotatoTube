@@ -68,8 +68,13 @@ class Chat(
         val name: String,
         val url: String,
     ) {
-        var height by mutableStateOf<Float?>(null)
-        var width by mutableStateOf<Float?>(null)
+        val messageDimension = EmoteDimension()
+        val emoteMenuDimension = EmoteDimension()
+    }
+
+    class EmoteDimension {
+        var height by mutableStateOf<Int?>(null)
+        var width by mutableStateOf<Int?>(null)
     }
 
     class User(

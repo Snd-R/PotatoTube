@@ -40,17 +40,6 @@ import org.snd.ui.util.SplitterState
 import org.snd.ui.util.VerticalSplittable
 import org.snd.ui.videoplayer.VideoPlayerView
 
-
-@Composable
-fun CytubeView(model: Channel) {
-    CytubeMainView(model)
-
-//    when (model.chat.currentScreen) {
-//        Chat.CurrentScreen.MAIN ->
-//        Chat.CurrentScreen.SETTINGS -> SettingsView(model.settings, model.chat)
-//    }
-}
-
 @Composable
 fun CytubeMainView(model: Channel) {
     val focusManager = LocalFocusManager.current

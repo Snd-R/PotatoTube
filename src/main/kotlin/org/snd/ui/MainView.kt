@@ -10,7 +10,7 @@ import org.snd.ui.common.AppTheme
 fun MainView(model: Channel) {
     MaterialTheme(colors = AppTheme.colors.material) {
         Surface {
-            CytubeView(model)
+            CytubeMainView(model)
         }
     }
 }

@@ -53,7 +53,7 @@ class ImageLoaderImpl(
             call.enqueue(object : Callback {
                 override fun onResponse(call: Call, response: Response) {
                     val body = response.body?.bytes() ?: throw BadResponse()
-                    if (ContentDetector.isSupportedImage(body)) {
+                    if (ContentDetector.isSupported(body)) {
                         cache.addImage(url, body)
                         continuation.resume(body)
                     } else

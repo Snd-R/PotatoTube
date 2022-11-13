@@ -78,19 +78,24 @@ fun ChatMessage(
             ?: (it.also { model.customEmotes[it.url] = it })
     }
 
-    // we don't know emote dimensions since it's not loaded yet, but we have to set placeholder size
-    // after emote is loaded we store emote dimensions and recompose with proper placeholder size
     val inlineContentMap = (model.channelEmotes.values + messageCustomEmotes).associate { emote ->
-        val emoteHeight = emote.height
-        val emoteWidth = emote.width
-        val (actualWidth, actualHeight) = if (emoteHeight != null && emoteWidth != null) {
-            scaleImageDimension(
-                from = Dimension(width = emoteWidth, height = emoteHeight),
-                to = Dimension(emoteSize.value, emoteSize.value)
+        emote.name to InlineTextContent(
+            Placeholder(
+                emote.messageDimension.width?.sp ?: emoteSize,
+                emote.messageDimension.height?.sp ?: emoteSize,
+                PlaceholderVerticalAlign.Center
             )
-        } else Dimension(emoteSize.value, emoteSize.value)
-        emote.name to InlineTextContent(Placeholder(actualWidth.sp, actualHeight.sp, PlaceholderVerticalAlign.Center)) {
-            EmoteImage(emote, model)
+        ) {
+            EmoteImage(
+                emote,
+                emote.messageDimension,
+                model,
+                scaleTo = Dimension(
+                    height = emoteSize.value.toInt(),
+                    width = emoteSize.value.toInt()
+                )
+            )
+
         }
     }
 
@@ -135,12 +140,4 @@ fun AnnotatedString.Builder.appendLink(text: String) {
     append(text)
     pop()
     pop()
-}
-
-fun scaleImageDimension(from: Dimension, to: Dimension): Dimension {
-    val bestRatio = (to.width / from.width).coerceAtMost(from.height / to.height)
-    return Dimension(
-        width = from.width * bestRatio,
-        height = from.height * bestRatio
-    )
 }

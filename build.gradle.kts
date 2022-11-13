@@ -39,6 +39,9 @@ dependencies {
     implementation("uk.co.caprica:vlcj:4.8.2")
     implementation("org.jsoup:jsoup:1.15.3")
 
+    implementation("com.twelvemonkeys.imageio:imageio-core:3.9.3")
+    runtimeOnly("com.twelvemonkeys.imageio:imageio-jpeg:3.9.3")
+
 }
 
 tasks.test {

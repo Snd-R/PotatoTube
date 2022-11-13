@@ -1,6 +1,6 @@
 package org.snd.image
 
 data class Dimension(
-    val width: Float,
-    val height: Float,
+    val width: Int,
+    val height: Int,
 )

@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.snd.image.Dimension
 import org.snd.ui.common.AppTheme
 import org.snd.ui.image.EmoteImage
 
@@ -68,6 +69,6 @@ fun Emote(emote: Chat.Emote, chat: Chat) {
                 else chat.messageInput.setMessage(emoteName)
             },
     ) {
-        EmoteImage(emote, chat)
+        EmoteImage(emote, emote.emoteMenuDimension, chat, scaleTo = Dimension(100, 100))
     }
 }

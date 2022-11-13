@@ -26,46 +26,53 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import org.jetbrains.compose.animatedimage.AnimatedImage
 import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.resources.LoadState
 import org.jetbrains.skia.Codec
 import org.jetbrains.skia.Data
-import org.snd.image.ImageAnalyzer
+import org.snd.image.Dimension
+import org.snd.image.ImageConverter
 import org.snd.image.Result
 import org.snd.ui.chat.Chat
 import org.snd.ui.common.AppTheme
 
+private val logger = KotlinLogging.logger {}
+
 @Composable
-fun EmoteImage(emote: Chat.Emote, model: Chat) {
-    val state: MutableState<LoadState<Codec>> = remember { mutableStateOf(LoadState.Loading()) }
+fun EmoteImage(
+    emote: Chat.Emote,
+    dimension: Chat.EmoteDimension,
+    model: Chat,
+    scaleTo: Dimension? = null,
+) {
+    val state: MutableState<LoadState<AnimatedImage>> = remember { mutableStateOf(LoadState.Loading()) }
     LaunchedEffect(emote.url) {
-        launch {
-
-            try {
-                when (val image = model.imageLoader.getImage(emote.url)) {
-                    is Result.Error -> {
-                        state.value = LoadState.Error(image.exception)
-                        emote.height = 90f
-                        emote.width = 90f
-                    }
-
-                    is Result.Success -> {
-                        val data = Data.makeFromBytes(image.data)
-                        val codec = Codec.makeFromData(data)
-
-                        ImageAnalyzer.getDimension(image.data.inputStream())?.let {
-                            emote.height = it.height
-                            emote.width = it.width
+        withContext(Dispatchers.IO) {
+            launch {
+                try {
+                    when (val image = model.imageLoader.getImage(emote.url)) {
+                        is Result.Error -> {
+                            state.value = LoadState.Error(image.exception)
+                            dimension.height = 60
+                            dimension.width = 60
                         }
-                        state.value = LoadState.Success(codec)
+
+                        is Result.Success -> {
+                            val processed = scaleImage(image.data, dimension, scaleTo)
+                            state.value = LoadState.Success(processed)
+                        }
                     }
+                } catch (e: Exception) {
+                    logger.error(e) {}
+                    state.value = LoadState.Error(e)
+                    dimension.height = 60
+                    dimension.width = 60
                 }
-            } catch (e: Exception) {
-                state.value = LoadState.Error(e)
-                emote.height = 90f
-                emote.width = 90f
             }
         }
     }
@@ -77,11 +84,45 @@ fun EmoteImage(emote: Chat.Emote, model: Chat) {
             EmoteTooltip(emote) {
                 EmoteImage(
                     emote,
-                    AnimatedImage(currentState.value).animate()
+                    currentState.value.animate()
                 )
             }
         }
     }
+}
+
+private fun scaleImage(
+    image: ByteArray,
+    dimension: Chat.EmoteDimension,
+    scaleTo: Dimension? = null,
+): AnimatedImage {
+    val processed = scaleTo?.let {
+        ImageConverter.downscaleImage(
+            image,
+            height = scaleTo.height,
+            width = scaleTo.width
+        )
+    }
+
+    if (processed != null) {
+        if (processed.scaled) {
+            dimension.height = processed.dimension.height
+            dimension.width = processed.dimension.width
+        } else {
+            val scaledDimension =
+                ImageConverter.scaleImageDimension(processed.dimension, scaleTo)
+            dimension.height = scaledDimension.height
+            dimension.width = scaledDimension.width
+        }
+    } else {
+        val scaledDimension = ImageConverter.getDimension(image)
+        dimension.height = scaledDimension?.height
+        dimension.width = scaledDimension?.width
+    }
+
+    val data = Data.makeFromBytes(processed?.image ?: image)
+    val codec = Codec.makeFromData(data)
+    return AnimatedImage(codec)
 }
 
 @Composable
@@ -93,7 +134,7 @@ fun EmoteImage(
         bitmap = image,
         contentDescription = emote.name,
         contentScale = ContentScale.Inside,
-        filterQuality = FilterQuality.High,
+        filterQuality = FilterQuality.None,
         modifier = Modifier.fillMaxSize()
     )
 }
@@ -118,11 +159,13 @@ fun EmoteTooltip(
 
 @Composable
 fun Loader() {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxWidth().padding(20.dp)
-    ) {
-        CircularProgressIndicator()
+    DisableSelection {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxWidth().padding(20.dp)
+        ) {
+            CircularProgressIndicator()
+        }
     }
 }
 
