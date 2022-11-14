@@ -52,14 +52,12 @@ private fun createModel(): Channel {
 
     val settings = runBlocking {
         val config = settingsRepository.loadSettings()
-        val userPassword = config.accountName?.let { settingsRepository.loadPassword(it) }
         SettingsModel(userStatus, settingsRepository, cytubeClient).apply {
             fontSize = config.fontSize.sp
             timestampFormat = config.timestampFormat
             emoteSize = config.emoteSize.sp
             historySize = config.historySize
             username = config.accountName
-            password = userPassword
             channel = config.currentChannel
         }
     }

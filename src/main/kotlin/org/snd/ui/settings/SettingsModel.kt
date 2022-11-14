@@ -11,7 +11,7 @@ import org.snd.ui.UserStatus
 
 class SettingsModel(
     val userStatus: UserStatus,
-    private val settingsRepository: SettingsRepository,
+    val settingsRepository: SettingsRepository,
     private val cytube: CytubeClient,
 ) {
     var isActiveScreen by mutableStateOf(false)
@@ -24,7 +24,6 @@ class SettingsModel(
 
     var channel by mutableStateOf<String?>(null)
     var username by mutableStateOf<String?>(null)
-    var password by mutableStateOf<String?>(null)
 
     var syncThreshold by mutableStateOf(2000L)
 
@@ -47,10 +46,9 @@ class SettingsModel(
     suspend fun logout() {
         cytube.disconnectFromChannel()
         username?.let { settingsRepository.deletePassword(it) }
-        this.username = null
-        this.password = null
-        val channelName = channel
+        username = null
 
+        val channelName = channel
         if (channelName != null) {
             cytube.joinChannel(channelName)
             userStatus.currentChannel = channelName
@@ -71,14 +69,15 @@ class SettingsModel(
         channel = channelName
 
         val username = username
-        val password = password
+        val password = username?.let {
+            settingsRepository.loadPassword(it)
+        }
         if (username != null && password != null)
             cytube.login(username, password)
     }
 
     fun persistCredentials(username: String, password: String) {
         this.username = username
-        this.password = password
         settingsRepository.setPassword(username, password)
     }
 

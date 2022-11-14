@@ -41,6 +41,7 @@ class ImageLoaderImpl(
             val image = loadImageFromNetwork(url)
             return Result.Success(image)
         } catch (e: Exception) {
+            logger.error(e) {  }
             Result.Error(e)
         }
 

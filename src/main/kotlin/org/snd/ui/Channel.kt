@@ -58,13 +58,12 @@ class Channel(
         }
 
         val username = settings.username
-        val password = settings.password
+        val password = username?.let { settings.settingsRepository.loadPassword(it) }
         if (username != null && password != null) {
             try {
                 cytube.login(username, password)
             } catch (e: Exception) {
                 settings.username = null
-                settings.password = null
             }
         }
     }

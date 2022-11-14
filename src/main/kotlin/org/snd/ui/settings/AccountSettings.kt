@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -15,10 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.LoadState
 
 @Composable
 fun AccountSettings(model: SettingsModel) {
@@ -58,29 +60,8 @@ fun AccountSettings(model: SettingsModel) {
 fun Login(model: SettingsModel) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var loginState by remember { mutableStateOf<LoadState<String>?>(null) }
     val coroutineScope = rememberCoroutineScope()
-
-    when (val state = loginState) {
-        null -> {}
-
-        is LoadState.Loading -> {
-            model.isLoading = true
-        }
-
-        is LoadState.Success -> {
-            model.persistCredentials(state.value, password)
-            username = ""
-            password = ""
-            model.isLoading = false
-            loginState = null
-        }
-
-        is LoadState.Error -> {
-            Text("Authentication error: ${state.exception.message}")
-            model.isLoading = false
-        }
-    }
+    var loginError by remember { mutableStateOf<String?>(null) }
 
     TextField(
         value = username,
@@ -94,18 +75,29 @@ fun Login(model: SettingsModel) {
         visualTransformation = PasswordVisualTransformation(),
     )
 
+    if (loginError != null) {
+        Text(
+            text = "Authentication error: $loginError",
+            style = TextStyle(color = MaterialTheme.colors.error, fontWeight = FontWeight.Bold),
+        )
+    }
+
     Button(
         onClick = {
-            loginState = LoadState.Loading()
+
+            model.isLoading = true
             coroutineScope.launch {
                 try {
-                    username = model.login(username, password)
-                    loginState = LoadState.Success(username)
+                    model.login(username, password)
+                    model.persistCredentials(username, password)
+
                 } catch (e: Exception) {
-                    loginState = LoadState.Error(e)
+                    loginError = e.message
                 }
+                model.isLoading = false
             }
         }) {
         Text("Login")
     }
+
 }
