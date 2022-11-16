@@ -5,12 +5,16 @@ import io.socket.client.Socket
 import io.socket.emitter.Emitter.Listener
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
+import org.apache.commons.text.StringEscapeUtils.unescapeHtml4
 import org.jetbrains.compose.resources.LoadState
 import org.json.JSONArray
 import org.json.JSONObject
 import org.snd.ui.chat.Chat
+import org.snd.ui.chat.Chat.Message.UserMessage
 import org.snd.ui.playlist.MediaItem
 import org.snd.ui.playlist.PlaylistItem
+import org.snd.ui.poll.Poll
+import org.snd.ui.poll.PollOption
 import java.time.Instant
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -134,6 +138,13 @@ class CytubeClient(
         }
     }
 
+    fun pollVote(optionNumber: Int) {
+        socket?.emit(
+            "vote", JSONObject()
+                .put("option", optionNumber)
+        )
+    }
+
     fun registerEventHandler(eventHandler: CytubeEventHandler) {
         val socket = this.socket ?: return
         socket.off()
@@ -141,7 +152,7 @@ class CytubeClient(
         socket.on("chatMsg") { args ->
             val response = args[0] as JSONObject
             eventHandler.onChatMessage(
-                Chat.Message(
+                UserMessage(
                     timestamp = Instant.ofEpochMilli(response.getLong("time")),
                     user = response.getString("username"),
                     message = response.getString("msg")
@@ -299,6 +310,19 @@ class CytubeClient(
             val response = it[0] as JSONObject
             eventHandler.onKick(response.getString("reason"))
         }
+
+        socket.on("newPoll") {
+            val response = it[0] as JSONObject
+            eventHandler.onNewPoll(parsePoll(response))
+        }
+        socket.on("updatePoll") {
+            val response = it[0] as JSONObject
+            eventHandler.updatePoll(parsePoll(response))
+        }
+
+        socket.on("closePoll") {
+            eventHandler.closePoll()
+        }
     }
 
     private fun parsePlaylistItem(json: JSONObject): PlaylistItem {
@@ -315,6 +339,32 @@ class CytubeClient(
             temp = json.getBoolean("temp"),
             queueBy = json.getString("queueby"),
             media = mediaItem
+        )
+    }
+
+    private fun parsePoll(json: JSONObject): Poll {
+
+        val countsJson = json.getJSONArray("counts")
+        val counts = mutableListOf<Int>()
+        for (i in 0 until countsJson.length())
+            counts.add(countsJson.getInt(i))
+
+        val optionsJson = json.getJSONArray("options")
+        val options = mutableListOf<String>()
+        for (i in 0 until optionsJson.length())
+            options.add(optionsJson.getString(i))
+
+        val initiator = json.getString("initiator")
+        val title = unescapeHtml4(json.getString("title"))
+        val timestamp = json.getLong("timestamp")
+
+        return Poll(
+            title = title,
+            totalCount = counts.sum(),
+            options = options.zip(counts)
+                .mapIndexed { index, (option, count) -> PollOption(unescapeHtml4(option), count, index) },
+            timestamp = Instant.ofEpochMilli(timestamp),
+            initiator = initiator
         )
     }
 

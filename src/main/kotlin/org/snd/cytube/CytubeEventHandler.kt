@@ -3,6 +3,7 @@ package org.snd.cytube
 import org.snd.ui.Channel
 import org.snd.ui.chat.Chat
 import org.snd.ui.playlist.PlaylistItem
+import org.snd.ui.poll.Poll
 
 class CytubeEventHandler(
     private val channel: Channel,
@@ -99,5 +100,17 @@ class CytubeEventHandler(
 
     fun onKick(reason: String) {
         channel.kicked(reason)
+    }
+
+    fun onNewPoll(poll: Poll) {
+        channel.newPoll(poll)
+    }
+
+    fun updatePoll(poll: Poll) {
+        channel.poll.updatePoll(poll)
+    }
+
+    fun closePoll() {
+       channel.poll.closeCurrent()
     }
 }

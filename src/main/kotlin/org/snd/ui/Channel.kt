@@ -8,6 +8,8 @@ import org.snd.cytube.CytubeEventHandler
 import org.snd.image.ImageLoader
 import org.snd.ui.chat.Chat
 import org.snd.ui.playlist.Playlist
+import org.snd.ui.poll.Poll
+import org.snd.ui.poll.PollState
 import org.snd.ui.settings.SettingsModel
 import org.snd.ui.videoplayer.VideoPlayerState
 
@@ -17,9 +19,10 @@ class Channel(
     val cytube: CytubeClient,
     imageLoader: ImageLoader
 ) {
-    val chat: Chat = Chat(cytube, settings, userStatus, imageLoader)
+    val poll = PollState(cytube)
     val player = VideoPlayerState(settings)
     val playlist = Playlist(cytube)
+    val chat: Chat = Chat(cytube, settings, userStatus, imageLoader, poll)
 
     fun connected() {
     }
@@ -31,6 +34,11 @@ class Channel(
 
     fun connectionError() {
         userStatus.disconnect("Can't connect to the server")
+    }
+
+    fun newPoll(poll: Poll) {
+        this.poll.startNewPoll(poll)
+        chat.addMessage(Chat.Message.AnnouncementMessage("${poll.initiator} opened a poll: ${poll.title}"))
     }
 
     fun kicked(reason: String) {

@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +37,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import org.snd.ui.chat.ChatView
 import org.snd.ui.playlist.PlaylistView
+import org.snd.ui.poll.PollMainView
 import org.snd.ui.util.SplitterState
 import org.snd.ui.util.VerticalSplittable
 import org.snd.ui.videoplayer.VideoPlayerView
@@ -74,13 +76,24 @@ fun CytubeMainView(model: Channel) {
             ) {
                 VideoPlayerView(model.player)
                 Spacer(Modifier.size(5.dp))
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .heightIn(max = 400.dp)
-                        .fillMaxWidth(0.5f)
+                Row(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    PlaylistView(model.playlist)
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 10.dp, top = 10.dp)
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        if (model.poll.currentPoll)
+                            PollMainView(model.poll)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .heightIn(max = 400.dp)
+                            .fillMaxWidth()
+                    ) {
+                        PlaylistView(model.playlist)
+                    }
                 }
             }
         }
@@ -89,7 +102,7 @@ fun CytubeMainView(model: Channel) {
 
 private class PanelState {
     val collapsedSize = 24.dp
-    var expandedSize by mutableStateOf(500.dp)
+    var expandedSize by mutableStateOf(400.dp)
     val expandedSizeMin = 300.dp
     var isExpanded by mutableStateOf(true)
     val splitter = SplitterState()

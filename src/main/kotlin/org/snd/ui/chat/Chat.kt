@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import org.snd.cytube.CytubeClient
 import org.snd.image.ImageLoader
 import org.snd.ui.UserStatus
+import org.snd.ui.poll.PollState
 import org.snd.ui.settings.SettingsModel
 import java.time.Instant
 
@@ -16,6 +17,7 @@ class Chat(
     val settings: SettingsModel,
     val userStatus: UserStatus,
     val imageLoader: ImageLoader,
+    val poll: PollState,
 ) {
     var scrolledUp by mutableStateOf(false)
     val messages: MutableList<Message> = mutableStateListOf()
@@ -58,11 +60,17 @@ class Chat(
         cytube.login(username, null)
     }
 
-    data class Message(
-        val timestamp: Instant,
-        val user: String,
-        val message: String,
-    )
+    sealed class Message {
+        data class UserMessage(
+            val timestamp: Instant,
+            val user: String,
+            val message: String,
+        ) : Message()
+
+        data class AnnouncementMessage(val message: String) : Message()
+
+    }
+
 
     class Emote(
         val name: String,

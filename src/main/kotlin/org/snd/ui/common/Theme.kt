@@ -12,7 +12,9 @@ object AppTheme {
         val backgroundMedium: Color = Color(0xFF3C3F41),
         val backgroundLight: Color = Color(0xFF4E5254),
         val backgroundLighter: Color = Color(0xFF717476),
+        val highlight: Color = Color(0XFFf2efd0),
         val buttonActive: Color = Color(0XFF34EB8F),
+        val announcementMessageColor: Color = Color(0XFFF7A52A),
 
         val material: androidx.compose.material.Colors = darkColors(
             background = backgroundDark,

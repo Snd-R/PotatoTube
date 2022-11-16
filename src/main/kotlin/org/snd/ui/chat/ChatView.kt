@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -19,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType.Companion.Scroll
@@ -27,6 +30,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.snd.ui.common.AppTheme
+import org.snd.ui.poll.PollChatView
 import org.snd.ui.settings.SettingsModel
 import org.snd.ui.settings.SettingsView
 import org.snd.ui.util.VerticalScrollbar
@@ -55,6 +59,7 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
                         .width(1.dp)
                         .fillMaxHeight()
                 )
+
                 MessageBox(model, settings)
             }
             Column(modifier = Modifier.background(AppTheme.colors.backgroundDarker)) {
@@ -118,8 +123,9 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
                         model.scrolledUp = true
                 }
         ) {
+
             val scrollState = rememberLazyListState()
-            LazyColumn(state = scrollState) { //TODO use regular column to cache images and avoid recompositions on new message?
+            LazyColumn(state = scrollState) {
                 items(model.messages.size) {
                     SelectionContainer {
                         ChatMessage(
@@ -129,7 +135,6 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
                             it,
                             model.messages[it],
                             model,
-                            settings.timestampFormat
                         )
                     }
                 }
@@ -139,6 +144,20 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
                 Modifier.align(Alignment.CenterEnd),
                 scrollState
             )
+
+            if (model.poll.currentPoll && model.poll.showChatPoll) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(elevation = 15.dp)
+                        .padding(top = 5.dp, start = 3.dp, end = 3.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, color = AppTheme.colors.backgroundLight, shape = RoundedCornerShape(10.dp))
+                        .background(color = AppTheme.colors.backgroundDark)
+                ) {
+                    PollChatView(model.poll)
+                }
+            }
 
             val endOfListReached by remember {
                 derivedStateOf { scrollState.isScrolledToEnd() || model.messages.isEmpty() }
