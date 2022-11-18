@@ -63,7 +63,9 @@ fun EmoteImage(
                         }
 
                         is Result.Success -> {
-                            val processed = scaleImage(image.data, dimension, scaleTo)
+                            val processed = withContext(Dispatchers.IO) {
+                                scaleImage(image.data, dimension, scaleTo)
+                            }
                             state.value = LoadState.Success(processed)
                         }
                     }
@@ -108,11 +110,15 @@ private fun scaleImage(
         if (processed.scaled) {
             dimension.height = processed.dimension.height
             dimension.width = processed.dimension.width
-        } else {
-            val scaledDimension =
-                ImageConverter.scaleImageDimension(processed.dimension, scaleTo)
-            dimension.height = scaledDimension.height
-            dimension.width = scaledDimension.width
+        } else { //TODO implement proper scaling for other types
+            if (processed.dimension.width <= scaleTo.width && processed.dimension.height <= scaleTo.height) {
+                dimension.height = processed.dimension.height
+                dimension.width = processed.dimension.width
+            } else {
+                val scaledDimension = ImageConverter.scaleImageDimension(processed.dimension, scaleTo)
+                dimension.height = scaledDimension.height
+                dimension.width = scaledDimension.width
+            }
         }
     } else {
         val scaledDimension = ImageConverter.getDimension(image)

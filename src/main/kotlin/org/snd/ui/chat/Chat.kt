@@ -148,7 +148,7 @@ class Chat(
 
         fun setUsers(newUsers: List<User>) {
             users.clear()
-            users.addAll(newUsers.sortedBy { it.rank.rank })
+            users.addAll(newUsers.sortedByDescending { it.rank.rank })
             newUsers.forEach { updateUserCountsWith(it, true) }
         }
 
@@ -163,7 +163,7 @@ class Chat(
 
         fun addUser(user: User) {
             users.add(user)
-            users.sortBy { it.rank }
+            users.sortByDescending { it.rank }
             updateUserCountsWith(user, true)
         }
 

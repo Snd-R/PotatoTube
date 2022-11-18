@@ -59,7 +59,7 @@ fun ChatMessage(
             model,
         )
 
-        is Chat.Message.ConnectionMessage -> ConnectionMessage(fontSize,height, message)
+        is Chat.Message.ConnectionMessage -> ConnectionMessage(fontSize, height, message)
         is AnnouncementMessage -> AnnouncementMessageView((fontSize.value + 5f).sp, message)
     }
 }
@@ -90,13 +90,11 @@ fun UserMessageView(
         }
     }
 
-    val inlineContent = remember {
-        emoteInlineContent(
-            parsedMessage.emotes + customEmotes,
-            emoteSize,
-            model
-        )
-    }
+    val inlineContent = emoteInlineContent(
+        parsedMessage.emotes + customEmotes,
+        emoteSize,
+        model
+    )
 
     val backgroundColor =
         if (parsedMessage.isMentioned) AppTheme.colors.backgroundLighter

@@ -54,7 +54,7 @@ object ImageConverter {
     }
 
     fun scaleImageDimension(from: Dimension, to: Dimension): Dimension {
-        val bestRatio = (to.width / from.width.toFloat()).coerceAtMost(from.height / to.height.toFloat())
+        val bestRatio = (to.width / from.width.toFloat()).coerceAtMost(to.height / from.height.toFloat())
         return Dimension(
             width = (from.width * bestRatio).toInt(),
             height = (from.height * bestRatio).toInt()
@@ -63,7 +63,7 @@ object ImageConverter {
 
     fun getDimension(data: ByteArray): Dimension? = getDimension(data.inputStream())
 
-    fun getDimension(stream: InputStream): Dimension? =
+    private fun getDimension(stream: InputStream): Dimension? =
         try {
             ImageIO.createImageInputStream(stream).use { fis ->
                 val readers = ImageIO.getImageReaders(fis)
