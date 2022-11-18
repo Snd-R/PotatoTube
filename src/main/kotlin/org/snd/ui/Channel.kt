@@ -8,6 +8,7 @@ import org.snd.cytube.CytubeClient
 import org.snd.cytube.CytubeEventHandler
 import org.snd.image.ImageLoader
 import org.snd.ui.chat.Chat
+import org.snd.ui.chat.Chat.Message.AnnouncementMessage
 import org.snd.ui.chat.Chat.Message.ConnectionMessage
 import org.snd.ui.chat.Chat.Message.ConnectionMessage.ConnectionType.CONNECTED
 import org.snd.ui.chat.Chat.Message.ConnectionMessage.ConnectionType.DISCONNECTED
@@ -34,13 +35,15 @@ class Channel(
         connectionStatus.hasConnectedBefore = true
         connectionStatus.currentChannel = channel
         connectionStatus.disconnectReason = null
-        chat.addMessage(ConnectionMessage("Connected", CONNECTED))
+        chat.addConnectionMessage(ConnectionMessage("Connected", CONNECTED))
     }
 
     fun disconnected() {
         connectionStatus.disconnect()
-        if (!connectionStatus.hasConnectedBefore) reset()
-        else if (!connectionStatus.kicked) chat.addMessage(ConnectionMessage("Disconnected", DISCONNECTED))
+        if (!connectionStatus.hasConnectedBefore)
+            reset()
+        else if (!connectionStatus.kicked)
+            chat.addConnectionMessage(ConnectionMessage("Disconnected", DISCONNECTED))
     }
 
     fun connectionError() {
@@ -49,12 +52,12 @@ class Channel(
 
     fun newPoll(poll: Poll) {
         this.poll.startNewPoll(poll)
-        chat.addMessage(Chat.Message.AnnouncementMessage("${poll.initiator} opened a poll: ${poll.title}"))
+        chat.addAnnouncementMessage(AnnouncementMessage("${poll.initiator} opened a poll: ${poll.title}"))
     }
 
     fun kicked(reason: String) {
         connectionStatus.kicked = true
-        chat.addMessage(ConnectionMessage("Kicked: $reason", DISCONNECTED))
+        chat.addConnectionMessage(ConnectionMessage("Kicked: $reason", DISCONNECTED))
         connectionStatus.disconnect()
     }
 

@@ -201,9 +201,6 @@ class CytubeClient(
     }
 
     private fun registerEventHandler(socket: Socket) {
-//        val socket = this.socket ?: return
-        socket.off()
-
         socket.on("chatMsg") { args ->
             val response = args[0] as JSONObject
             eventHandler.onChatMessage(

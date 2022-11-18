@@ -21,13 +21,30 @@ class Chat(
 ) {
     var scrolledUp by mutableStateOf(false)
     val messages: MutableList<Message> = mutableStateListOf()
+    var lastUserMessageTimestamp by mutableStateOf<Instant?>(null)
     val channelEmotes = mutableStateMapOf<String, Emote>()
     val customEmotes = mutableStateMapOf<String, Emote>()
     var users = Users()
 
     val messageInput = MessageInput()
 
-    fun addMessage(message: Message) {
+    fun addUserMessage(message: Message.UserMessage) {
+        val lastTimestamp = lastUserMessageTimestamp
+        if (lastTimestamp != null && !message.timestamp.isAfter(lastTimestamp)) return
+
+        addMessage(message)
+        this.lastUserMessageTimestamp = message.timestamp
+    }
+
+    fun addAnnouncementMessage(message: Message.AnnouncementMessage) {
+        addMessage(message)
+    }
+
+    fun addConnectionMessage(message: Message.ConnectionMessage) {
+        addMessage(message)
+    }
+
+    private fun addMessage(message: Message) {
         while (messages.size >= settings.historySize) messages.removeFirstOrNull()
         messages.add(message)
     }
@@ -40,6 +57,7 @@ class Chat(
 
     fun reset() {
         messages.clear()
+        lastUserMessageTimestamp = null
         channelEmotes.clear()
         users = Users()
     }
@@ -61,10 +79,11 @@ class Chat(
     }
 
     sealed class Message {
+
         data class UserMessage(
-            val timestamp: Instant,
             val user: String,
             val message: String,
+            val timestamp: Instant
         ) : Message()
 
         data class AnnouncementMessage(val message: String) : Message()
@@ -139,7 +158,7 @@ class Chat(
         }
 
         fun setAfk(user: String, afk: Boolean) {
-            users.firstOrNull() { it.name == user }?.afk = afk
+            users.firstOrNull { it.name == user }?.afk = afk
         }
 
         fun addUser(user: User) {

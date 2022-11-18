@@ -13,8 +13,8 @@ class CytubeEventHandler(
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    fun onChatMessage(message: Chat.Message) {
-        channel.chat.addMessage(message)
+    fun onChatMessage(message: Chat.Message.UserMessage) {
+        channel.chat.addUserMessage(message)
     }
 
     fun onLoginSuccess(name: String, isGuest: Boolean = false) {
