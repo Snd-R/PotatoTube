@@ -90,8 +90,8 @@ class CytubeEventHandler(
         coroutineScope.launch { channel.reconnect() }
     }
 
-    fun onChannelJoin() {
-        channel.connectionStatus.hasConnectedBefore = true
+    fun onChannelJoin(channelName:String) {
+        channel.joinedChannel(channelName)
     }
 
     fun onUserInitiatedDisconnect() {
@@ -100,6 +100,7 @@ class CytubeEventHandler(
     }
 
     fun onDisconnect() {
+        channel.disconnected()
     }
 
     fun onConnectError() {

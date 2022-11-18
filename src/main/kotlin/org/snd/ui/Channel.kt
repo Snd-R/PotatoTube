@@ -8,6 +8,9 @@ import org.snd.cytube.CytubeClient
 import org.snd.cytube.CytubeEventHandler
 import org.snd.image.ImageLoader
 import org.snd.ui.chat.Chat
+import org.snd.ui.chat.Chat.Message.ConnectionMessage
+import org.snd.ui.chat.Chat.Message.ConnectionMessage.ConnectionType.CONNECTED
+import org.snd.ui.chat.Chat.Message.ConnectionMessage.ConnectionType.DISCONNECTED
 import org.snd.ui.playlist.Playlist
 import org.snd.ui.poll.Poll
 import org.snd.ui.poll.PollState
@@ -27,10 +30,17 @@ class Channel(
     val playlist = Playlist(cytube)
     val chat: Chat = Chat(cytube, settings, connectionStatus, imageLoader, poll)
 
+    fun joinedChannel(channel: String) {
+        connectionStatus.hasConnectedBefore = true
+        connectionStatus.currentChannel = channel
+        connectionStatus.disconnectReason = null
+        chat.addMessage(ConnectionMessage("Connected", CONNECTED))
+    }
+
     fun disconnected() {
         connectionStatus.disconnect()
-        if (!connectionStatus.hasConnectedBefore)
-            reset()
+        if (!connectionStatus.hasConnectedBefore) reset()
+        else if (!connectionStatus.kicked) chat.addMessage(ConnectionMessage("Disconnected", DISCONNECTED))
     }
 
     fun connectionError() {
@@ -43,7 +53,9 @@ class Channel(
     }
 
     fun kicked(reason: String) {
-        connectionStatus.disconnect(reason)
+        connectionStatus.kicked = true
+        chat.addMessage(ConnectionMessage("Kicked: $reason", DISCONNECTED))
+        connectionStatus.disconnect()
     }
 
     private fun reset() {
@@ -104,6 +116,7 @@ class ConnectionStatus {
     var currentChannel by mutableStateOf<String?>(null)
     var isGuest by mutableStateOf(false)
     var hasConnectedBefore by mutableStateOf(false)
+    var kicked by mutableStateOf(false)
     var disconnectReason by mutableStateOf<String?>(null)
 
     fun connectedAndAuthenticated() = currentUser != null && currentChannel != null

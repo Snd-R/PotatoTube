@@ -69,6 +69,16 @@ class Chat(
 
         data class AnnouncementMessage(val message: String) : Message()
 
+        data class ConnectionMessage(
+            val message: String,
+            val type: ConnectionType
+        ) : Message() {
+
+            enum class ConnectionType {
+                CONNECTED,
+                DISCONNECTED
+            }
+        }
     }
 
 
@@ -141,18 +151,6 @@ class Chat(
             val user = users.first { it.name == name }
             updateUserCountsWith(user, false)
             users.remove(user)
-        }
-
-        fun reset() {
-            users.clear()
-            siteAdmins = 0
-            channelAdmins = 0
-            moderators = 0
-            regularUsers = 0
-            guests = 0
-            anonymous = 0
-            afk = 0
-            userCount = 0
         }
 
         private fun updateUserCountsWith(user: User, positive: Boolean) {

@@ -1,15 +1,18 @@
 package org.snd.ui.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -30,6 +33,7 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.parser.Parser
 import org.snd.image.Dimension
 import org.snd.ui.chat.Chat.Message.AnnouncementMessage
+import org.snd.ui.chat.Chat.Message.ConnectionMessage.ConnectionType.DISCONNECTED
 import org.snd.ui.chat.Chat.Message.UserMessage
 import org.snd.ui.common.AppTheme
 import org.snd.ui.image.EmoteImage
@@ -55,8 +59,8 @@ fun ChatMessage(
             model,
         )
 
+        is Chat.Message.ConnectionMessage -> ConnectionMessage(fontSize,height, message)
         is AnnouncementMessage -> AnnouncementMessageView((fontSize.value + 5f).sp, message)
-
     }
 }
 
@@ -129,6 +133,30 @@ fun AnnouncementMessageView(
     )
 
 }
+
+@Composable
+fun ConnectionMessage(
+    fontSize: TextUnit,
+    height: Dp,
+    message: Chat.Message.ConnectionMessage,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = height)
+            .border(0.dp, color = AppTheme.colors.backgroundMedium),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = message.message,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            color = if (message.type == DISCONNECTED) MaterialTheme.colors.error else AppTheme.colors.green,
+            modifier = Modifier.padding(3.dp)
+        )
+    }
+}
+
 
 //TODO no selectable and clickable text for now https://github.com/JetBrains/compose-jb/issues/1450
 fun parseMessage(

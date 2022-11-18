@@ -118,7 +118,7 @@ class CytubeClient(
 
             socket?.on("errorMsg", errorCallback)
             socket?.once("setPermissions") {
-                eventHandler.onChannelJoin()
+                eventHandler.onChannelJoin(channelName)
                 continuation.resume(Unit)
             }
             socket?.emit("joinChannel", JSONObject().put("name", channelName))
