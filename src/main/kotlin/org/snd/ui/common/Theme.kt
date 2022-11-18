@@ -17,6 +17,12 @@ object AppTheme {
         val announcementMessageColor: Color = Color(0XFFF7A52A),
         val green: Color = Color(0XFF4FD172),
 
+        val guest: Color = Color(0XFF888888),
+        val regularUser: Color = Color(0XFFC8C8C8),
+        val moderator: Color = Color(0XFF00AA00),
+        val channelAdmin: Color = Color(0XFFFF9900),
+        val siteAdmin: Color = Color(0XFFCC0000),
+
         val material: androidx.compose.material.Colors = darkColors(
             background = backgroundDark,
             surface = backgroundMedium,

@@ -40,7 +40,7 @@ fun ChannelBar(model: Chat) {
                 val channelLabel = currentChannel ?: "Not connected"
                 Text(channelLabel)
             }
-            TooltipArea(tooltip = { ConnectedUsersTooltip(model.users) }) {
+            TooltipArea(tooltip = { ConnectedUsersTooltip(model.users) }, delayMillis = 0) {
                 if (currentChannel != null) {
                     val users = if (model.users.userCount == 1) "user" else "users"
                     Text("${model.users.userCount} connected $users", fontSize = 13.sp)

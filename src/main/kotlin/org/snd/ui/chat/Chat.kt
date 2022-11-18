@@ -148,7 +148,7 @@ class Chat(
 
         fun setUsers(newUsers: List<User>) {
             users.clear()
-            users.addAll(newUsers)
+            users.addAll(newUsers.sortedBy { it.rank.rank })
             newUsers.forEach { updateUserCountsWith(it, true) }
         }
 
@@ -163,6 +163,7 @@ class Chat(
 
         fun addUser(user: User) {
             users.add(user)
+            users.sortBy { it.rank }
             updateUserCountsWith(user, true)
         }
 
@@ -187,11 +188,11 @@ class Chat(
         }
     }
 
-    enum class UserRank {
-        GUEST,
-        REGULAR_USER,
-        MODERATOR,
-        CHANNEL_ADMIN,
-        SITE_ADMIN,
+    enum class UserRank(val rank: Int) {
+        GUEST(0),
+        REGULAR_USER(1),
+        MODERATOR(2),
+        CHANNEL_ADMIN(3),
+        SITE_ADMIN(255),
     }
 }

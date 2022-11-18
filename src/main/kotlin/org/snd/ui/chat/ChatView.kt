@@ -27,6 +27,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType.Companion.Scroll
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.snd.ui.common.AppTheme
@@ -195,9 +196,16 @@ fun UserList(model: Chat) {
 }
 
 @Composable
-fun ActiveUser(model: Chat.User) {
+fun ActiveUser(user: Chat.User) {
+    val (color, weight) = when (user.rank) {
+        Chat.UserRank.GUEST -> AppTheme.colors.guest to FontWeight.Normal
+        Chat.UserRank.REGULAR_USER -> AppTheme.colors.regularUser to FontWeight.Normal
+        Chat.UserRank.MODERATOR -> AppTheme.colors.moderator to FontWeight.Normal
+        Chat.UserRank.CHANNEL_ADMIN -> AppTheme.colors.channelAdmin to FontWeight.Bold
+        Chat.UserRank.SITE_ADMIN -> AppTheme.colors.siteAdmin to FontWeight.Bold
+    }
     Row {
-        if (model.afk) {
+        if (user.afk) {
             Icon(
                 Icons.Default.Schedule,
                 contentDescription = "AFK",
@@ -208,8 +216,10 @@ fun ActiveUser(model: Chat.User) {
             )
         }
         Text(
-            model.name,
+            user.name,
             fontSize = 13.sp,
+            color = color,
+            fontWeight = weight,
             modifier = Modifier.align(Alignment.Top)
         )
     }
