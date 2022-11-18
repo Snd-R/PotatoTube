@@ -13,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ImageInfo
@@ -87,21 +90,23 @@ fun VideoPlayer(
             override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
                 super.mediaPlayerReady(mediaPlayer)
                 state.length = mediaPlayer.status().length()
-                if (!state.isPlaying) {
-                    mediaPlayer.controls().pause()
-                }
+                state.isPlaying = true
             }
 
             override fun finished(mediaPlayer: MediaPlayer) {
                 super.finished(mediaPlayer)
                 state.isPlaying = false
-//                state.mrl = null
-//                state.time.updateInternally(0L)
+                state.mrl = null
+                state.time.updateInternally(0L)
             }
 
             override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
                 super.timeChanged(mediaPlayer, newTime)
                 state.time.updateInternally(newTime)
+            }
+
+            override fun buffering(mediaPlayer: MediaPlayer?, newCache: Float) {
+                state.isBuffering = newCache != 100.0f
             }
         })
         embeddedMediaPlayer
@@ -109,26 +114,42 @@ fun VideoPlayer(
 
     if (state.mrl != null) {
         LaunchedEffect(key1 = state.mrl) {
-            mediaPlayer.media().play(state.mrl)
+            val mrl = state.mrl
+            withContext(Dispatchers.IO) {
+                launch { mediaPlayer.media().play(mrl) }
+            }
         }
 
         LaunchedEffect(state.time.updatedExternallyToggle) {
-            mediaPlayer.controls().setTime(state.time.value)
+            val time = state.time.value
+            withContext(Dispatchers.IO) {
+                launch { mediaPlayer.controls().setTime(time) }
+            }
         }
 
         LaunchedEffect(state.isPlaying) {
-            if (state.isPlaying) {
-                mediaPlayer.controls().start()
-            } else {
-                mediaPlayer.controls().pause()
+            val isPlaying = state.isPlaying
+            withContext(Dispatchers.IO) {
+                launch {
+                    if (isPlaying) {
+                        mediaPlayer.controls().start()
+                    } else {
+                        mediaPlayer.controls().pause()
+                    }
+                }
             }
         }
         LaunchedEffect(state.volume) {
-            mediaPlayer.audio().setVolume(state.volume)
-
+            val volume = state.volume
+            withContext(Dispatchers.IO) {
+                launch { mediaPlayer.audio().setVolume(volume) }
+            }
         }
+
         LaunchedEffect(state.isMuted) {
-            mediaPlayer.audio().mute()
+            withContext(Dispatchers.IO) {
+                launch { mediaPlayer.audio().mute() }
+            }
         }
     }
 

@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
@@ -47,25 +50,41 @@ fun VideoPlayerView(state: VideoPlayerState) {
             .hoverable(interactionSource = interactionSource)
     ) {
         VideoPlayer(state, Modifier.matchParentSize())
-        if (!state.isPlaying || isHovered) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight(0.4f)
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.2f),
-                            )
-                        )
-                    )
-            ) {
-                VideoControlsOverlay(
-                    state, Modifier.align(Alignment.BottomCenter)
-                )
+        if (!state.isPlaying || isHovered || state.isBuffering) {
+
+            Box {
+                VideoOverlay(state)
             }
         }
+    }
+}
+
+@Composable
+fun VideoOverlay(state: VideoPlayerState) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight(0.4f)
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.2f),
+                        )
+                    )
+                )
+        )
+
+        if (state.isBuffering) {
+            println("buffering")
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
+
+        VideoControlsOverlay(
+            state, Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -90,8 +109,7 @@ fun VideoControlsOverlay(state: VideoPlayerState, modifier: Modifier = Modifier)
                 contentDescription = "Pause",
                 tint = Color.White,
                 modifier = Modifier
-                    .width(30.dp)
-                    .height(30.dp)
+                    .size(30.dp)
                     .clickable {
                         if (state.isPlaying) {
                             state.pause()

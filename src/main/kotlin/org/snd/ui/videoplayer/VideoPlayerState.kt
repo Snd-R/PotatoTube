@@ -16,6 +16,7 @@ class VideoPlayerState(
     var length by mutableStateOf(-1L)
     var volume by mutableStateOf(50)
     var isMuted by mutableStateOf(false)
+    var isBuffering by mutableStateOf(false)
 
     var mrl by mutableStateOf<String?>(null)
 
