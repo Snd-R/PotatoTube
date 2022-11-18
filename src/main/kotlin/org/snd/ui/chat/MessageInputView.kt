@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.LoadState
@@ -40,6 +41,7 @@ fun MessageInputView(chat: Chat) {
             enabled = isInputEnabled.value,
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp)
                 .onPreviewKeyEvent {
                     when {
                         it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {

@@ -78,8 +78,7 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
                         contentDescription = "Settings",
                         tint = Color.LightGray,
                         modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
+                            .size(25.dp)
                             .clickable {
                                 model.settings.isActiveScreen = true
                             }
@@ -90,8 +89,7 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
                         contentDescription = "Emotes",
                         tint = if (emoteMenu) AppTheme.colors.buttonActive else Color.LightGray,
                         modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
+                            .size(25.dp)
                             .clickable(enabled = model.channelEmotes.isNotEmpty()) {
                                 emoteMenu = !emoteMenu
                             }
