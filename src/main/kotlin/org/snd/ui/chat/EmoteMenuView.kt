@@ -47,7 +47,7 @@ fun EmoteMenuView(chat: Chat) {
             columns = GridCells.Adaptive(minSize = 100.dp),
             contentPadding = PaddingValues(10.dp),
         ) {
-            items(emotes.size) {
+            items(emotes.size, key = { emotes[it].name }) {
                 Emote(emotes[it], chat)
             }
         }
