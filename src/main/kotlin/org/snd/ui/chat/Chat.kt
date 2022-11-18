@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.snd.cytube.CytubeClient
 import org.snd.image.ImageLoader
-import org.snd.ui.UserStatus
+import org.snd.ui.ConnectionStatus
 import org.snd.ui.poll.PollState
 import org.snd.ui.settings.SettingsModel
 import java.time.Instant
@@ -15,7 +15,7 @@ import java.time.Instant
 class Chat(
     private val cytube: CytubeClient,
     val settings: SettingsModel,
-    val userStatus: UserStatus,
+    val connectionStatus: ConnectionStatus,
     val imageLoader: ImageLoader,
     val poll: PollState,
 ) {

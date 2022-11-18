@@ -9,17 +9,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
+import com.squareup.moshi.Moshi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.snd.cytube.CytubeClient
 import org.snd.cytube.SimpleCookieJar
 import org.snd.image.DiscCache
 import org.snd.image.ImageLoaderImpl
 import org.snd.settings.SettingsRepository
 import org.snd.ui.Channel
+import org.snd.ui.ConnectionStatus
 import org.snd.ui.MainView
-import org.snd.ui.UserStatus
 import org.snd.ui.settings.SettingsModel
 
 fun main() = singleWindowApplication(
@@ -29,30 +32,29 @@ fun main() = singleWindowApplication(
 ) {
     val model = createModel()
     val coroutineScope = rememberCoroutineScope()
-    coroutineScope.launch {
-        model.connect()
-    }
+    coroutineScope.launch { model.init() }
     MainView(model)
 }
 
 @Composable
 private fun createModel(): Channel {
     val httpClient = OkHttpClient.Builder()
-//        .addInterceptor(HttpLoggingInterceptor { message -> KotlinLogging.logger { message } }
-//            .setLevel(HttpLoggingInterceptor.Level.BODY))
+        .addInterceptor(HttpLoggingInterceptor { message -> KotlinLogging.logger { }.info { message } }
+            .setLevel(HttpLoggingInterceptor.Level.BASIC))
         .cookieJar(SimpleCookieJar())
         .build()
     val discCache = DiscCache()
     discCache.initialize()
     val imageLoader = ImageLoaderImpl(httpClient, discCache)
 
-    val cytubeClient = CytubeClient(httpClient)
+    val moshi = Moshi.Builder().build()
+    val cytubeClient = CytubeClient(httpClient, moshi)
     val settingsRepository = SettingsRepository()
-    val userStatus = UserStatus()
+    val connectionStatus = ConnectionStatus()
 
     val settings = runBlocking {
         val config = settingsRepository.loadSettings()
-        SettingsModel(userStatus, settingsRepository, cytubeClient).apply {
+        SettingsModel(connectionStatus, settingsRepository, cytubeClient).apply {
             fontSize = config.fontSize.sp
             timestampFormat = config.timestampFormat
             emoteSize = config.emoteSize.sp
@@ -63,7 +65,7 @@ private fun createModel(): Channel {
     }
 
     return Channel(
-        userStatus = userStatus,
+        connectionStatus = connectionStatus,
         settings = settings,
         cytube = cytubeClient,
         imageLoader = imageLoader

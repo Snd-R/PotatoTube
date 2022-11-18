@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("org.jetbrains.compose") version "1.2.1"
+    id("com.google.devtools.ksp").version("1.7.20-1.0.7")
 }
 
 group = "org.snd"
@@ -29,6 +30,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
     implementation("com.squareup.moshi:moshi:1.14.0")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
     implementation("com.charleskorn.kaml:kaml:0.49.0")
 
     implementation("com.github.javakeyring:java-keyring:1.0.1")
@@ -69,7 +71,7 @@ compose.desktop {
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+    kotlinOptions.freeCompilerArgs += listOf("-opt-in=kotlin.RequiresOptIn", "-opt-in=kotlin.ExperimentalStdlibApi")
 }
 
 tasks.register<Zip>("repackageUberJar") {

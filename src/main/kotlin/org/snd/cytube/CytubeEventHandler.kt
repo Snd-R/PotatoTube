@@ -1,5 +1,8 @@
 package org.snd.cytube
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.snd.ui.Channel
 import org.snd.ui.chat.Chat
 import org.snd.ui.playlist.PlaylistItem
@@ -8,18 +11,15 @@ import org.snd.ui.poll.Poll
 class CytubeEventHandler(
     private val channel: Channel,
 ) {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     fun onChatMessage(message: Chat.Message) {
         channel.chat.addMessage(message)
     }
 
     fun onLoginSuccess(name: String, isGuest: Boolean = false) {
-        channel.userStatus.currentUser = name
-        channel.userStatus.isGuest = isGuest
-    }
-
-    fun onLoginFailure() {
-
+        channel.connectionStatus.currentUser = name
+        channel.connectionStatus.isGuest = isGuest
     }
 
     fun onEmoteList(emotes: List<Chat.Emote>) {
@@ -87,11 +87,19 @@ class CytubeEventHandler(
     }
 
     fun onConnect() {
-        channel.connected()
+        coroutineScope.launch { channel.reconnect() }
+    }
+
+    fun onChannelJoin() {
+        channel.connectionStatus.hasConnectedBefore = true
+    }
+
+    fun onUserInitiatedDisconnect() {
+        channel.connectionStatus.hasConnectedBefore = false
+        channel.disconnected()
     }
 
     fun onDisconnect() {
-        channel.disconnected()
     }
 
     fun onConnectError() {
@@ -111,6 +119,6 @@ class CytubeEventHandler(
     }
 
     fun closePoll() {
-       channel.poll.closeCurrent()
+        channel.poll.closeCurrent()
     }
 }

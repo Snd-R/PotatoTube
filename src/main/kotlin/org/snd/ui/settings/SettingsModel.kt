@@ -7,28 +7,23 @@ import androidx.compose.ui.unit.sp
 import org.snd.cytube.CytubeClient
 import org.snd.settings.Settings
 import org.snd.settings.SettingsRepository
-import org.snd.ui.UserStatus
+import org.snd.ui.ConnectionStatus
 
 class SettingsModel(
-    val userStatus: UserStatus,
+    val connectionStatus: ConnectionStatus,
     val settingsRepository: SettingsRepository,
     private val cytube: CytubeClient,
 ) {
     var isActiveScreen by mutableStateOf(false)
-
     var currentTab by mutableStateOf(CurrentTab.CHAT)
     var fontSize by mutableStateOf(13.sp)
     var emoteSize by mutableStateOf(120.sp)
     var timestampFormat by mutableStateOf("")
     var historySize by mutableStateOf(0)
-
     var channel by mutableStateOf<String?>(null)
     var username by mutableStateOf<String?>(null)
-
     var syncThreshold by mutableStateOf(2000L)
-
     var isLoading by mutableStateOf(false)
-
 
     suspend fun save() {
         settingsRepository.saveSettings(
@@ -44,28 +39,26 @@ class SettingsModel(
     }
 
     suspend fun logout() {
-        cytube.disconnectFromChannel()
         username?.let { settingsRepository.deletePassword(it) }
         username = null
 
         val channelName = channel
         if (channelName != null) {
-            cytube.joinChannel(channelName)
-            userStatus.currentChannel = channelName
+            cytube.connect(channelName)
+            connectionStatus.currentChannel = channelName
         }
     }
 
     fun disconnect() {
-        cytube.disconnectFromChannel()
         channel = null
-
+        cytube.disconnect()
     }
 
     suspend fun changeChannel(channelName: String) {
         channel = null
-        userStatus.currentChannel = null
-        cytube.joinChannel(channelName)
-        userStatus.currentChannel = channelName
+        connectionStatus.currentChannel = null
+        cytube.connect(channelName)
+        connectionStatus.currentChannel = channelName
         channel = channelName
 
         val username = username
@@ -84,7 +77,6 @@ class SettingsModel(
     suspend fun login(username: String, password: String): String {
         return cytube.login(username, password)
     }
-
 
     enum class CurrentTab {
         CHAT,

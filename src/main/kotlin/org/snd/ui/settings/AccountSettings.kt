@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 fun AccountSettings(model: SettingsModel) {
     val coroutineScope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        val currentUser = model.username ?: model.userStatus.currentUser
+        val currentUser = model.username ?: model.connectionStatus.currentUser
         Row {
             Column {
                 Text("Account Settings")

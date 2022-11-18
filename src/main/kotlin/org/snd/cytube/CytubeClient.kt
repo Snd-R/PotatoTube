@@ -1,10 +1,19 @@
 package org.snd.cytube
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.adapter
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter.Listener
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import mu.KotlinLogging
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.apache.commons.text.StringEscapeUtils.unescapeHtml4
 import org.jetbrains.compose.resources.LoadState
 import org.json.JSONArray
@@ -15,44 +24,87 @@ import org.snd.ui.playlist.MediaItem
 import org.snd.ui.playlist.PlaylistItem
 import org.snd.ui.poll.Poll
 import org.snd.ui.poll.PollOption
+import java.io.IOException
 import java.time.Instant
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
-const val CYTUBE_URL = "https://bigapple.cytu.be:8443" // TODO resolve actual partition on connect
+const val CYTUBE_BASE_URL = "https://cytu.be"
 const val YOUTUBE_PREFIX = "https://www.youtube.com/watch?v="
 
 private val logger = KotlinLogging.logger {}
 
 class CytubeClient(
-    private val okHttpClient: OkHttpClient,
+    private val httpClient: OkHttpClient,
+    private val moshi: Moshi
 ) {
+    lateinit var eventHandler: CytubeEventHandler
+    private val timeout = 10.seconds
+
+    @Volatile
     private var socket: Socket? = null
 
-    fun connect() {
+    suspend fun connect(channel: String) {
+        val partition = getPartition(channel)
         socket?.close()
         val options: IO.Options = IO.Options.builder().build()
-        options.callFactory = okHttpClient
-        options.webSocketFactory = okHttpClient
+            .apply {
+                callFactory = httpClient
+                webSocketFactory = httpClient
+            }
 
-        val socket = IO.socket(CYTUBE_URL)
+        val socket = IO.socket(partition, options)
         this.socket = socket
 
-        socket.onAnyIncoming { logger.debug { "incoming ${it.joinToString()}" } }
-        socket.onAnyOutgoing { logger.debug { "outgoing ${it.joinToString()}" } }
+        socket.onAnyIncoming { logger.info { "incoming ${it.joinToString()}" } }
+        socket.onAnyOutgoing { logger.info { "outgoing ${it.joinToString()}" } }
+        registerEventHandler(socket)
         socket.connect()
+        joinChannel(channel)
     }
 
-    fun disconnectFromChannel() {
+    fun disconnect() {
+        eventHandler.onUserInitiatedDisconnect()
         socket?.close()
-        socket?.connect()
+    }
+
+    private suspend fun getPartition(channel: String): String {
+        val request = Request.Builder()
+            .url(
+                CYTUBE_BASE_URL.toHttpUrl().newBuilder()
+                    .addPathSegments("socketconfig/$channel.json")
+                    .build()
+            ).build()
+
+        val json = suspendCancellableCoroutine { continuation ->
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onResponse(call: Call, response: Response) {
+                    val body = response.body?.string()
+                    if (body == null) continuation.resumeWithException(RuntimeException("empty body"))
+                    else continuation.resume(body)
+                }
+
+                override fun onFailure(call: Call, e: IOException) {
+                    if (continuation.isCancelled) return
+                    continuation.resumeWithException(e)
+                }
+            })
+        }
+
+        val socketConfig = moshi.adapter<SocketConfig>().fromJson(json)
+            ?: throw RuntimeException("can't parse json")
+
+        return socketConfig.servers.firstOrNull { it.secure }?.url
+            ?: socketConfig.servers.first().url
+
     }
 
     suspend fun joinChannel(channelName: String) {
         return suspendCoroutine { continuation ->
-            disconnectFromChannel()
-
             val errorCallback = object : Listener {
                 override fun call(vararg args: Any?) {
                     val response = args[0] as JSONObject
@@ -65,7 +117,10 @@ class CytubeClient(
             }
 
             socket?.on("errorMsg", errorCallback)
-            socket?.once("setPermissions") { continuation.resume(Unit) }
+            socket?.once("setPermissions") {
+                eventHandler.onChannelJoin()
+                continuation.resume(Unit)
+            }
             socket?.emit("joinChannel", JSONObject().put("name", channelName))
         }
     }
@@ -79,7 +134,7 @@ class CytubeClient(
     }
 
     suspend fun login(username: String, password: String?): String {
-        return suspendCoroutine { continuation ->
+        return suspendCoroutineWithTimeout(timeout) { continuation ->
             socket?.once("login") {
                 val response = it[0] as JSONObject
                 if (response.getBoolean("success")) {
@@ -96,7 +151,7 @@ class CytubeClient(
     }
 
     suspend fun queue(url: String, putLast: Boolean, temp: Boolean): LoadState<Unit> {
-        return suspendCoroutine { continuation ->
+        return suspendCoroutineWithTimeout(timeout) { continuation ->
             val type = if (url.startsWith(YOUTUBE_PREFIX)) "yt" else "fi"
             val submittedId = if (type == "yt") url.removePrefix(YOUTUBE_PREFIX) else url
 
@@ -145,8 +200,8 @@ class CytubeClient(
         )
     }
 
-    fun registerEventHandler(eventHandler: CytubeEventHandler) {
-        val socket = this.socket ?: return
+    private fun registerEventHandler(socket: Socket) {
+//        val socket = this.socket ?: return
         socket.off()
 
         socket.on("chatMsg") { args ->
@@ -297,12 +352,15 @@ class CytubeClient(
         }
 
         socket.on("connect") {
+            logger.debug { "connected" }
             eventHandler.onConnect()
         }
         socket.on("connect_error") {
+            logger.debug { "connection error" }
             eventHandler.onConnectError()
         }
         socket.on("disconnect") {
+            logger.debug { "disconnected" }
             eventHandler.onDisconnect()
         }
 
@@ -367,5 +425,12 @@ class CytubeClient(
             initiator = initiator
         )
     }
+}
 
+suspend inline fun <T> suspendCoroutineWithTimeout(timeout: Duration, crossinline block: (Continuation<T>) -> Unit): T {
+    var finalValue: T
+    withTimeout(timeout) {
+        finalValue = suspendCancellableCoroutine(block = block)
+    }
+    return finalValue
 }

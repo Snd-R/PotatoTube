@@ -22,12 +22,12 @@ fun MessageInputView(chat: Chat) {
     val model = chat.messageInput
     val coroutineScope = rememberCoroutineScope()
     val label =
-        if (chat.userStatus.currentUser == null && chat.userStatus.currentChannel != null) "Guest login"
+        if (chat.connectionStatus.currentUser == null && chat.connectionStatus.currentChannel != null) "Guest login"
         else "Send a message"
 
     var loadState by remember { mutableStateOf<LoadState<Unit>>(LoadState.Success(Unit)) }
     val isInputEnabled =
-        remember { derivedStateOf { loadState !is LoadState.Loading && chat.userStatus.currentChannel != null } }
+        remember { derivedStateOf { loadState !is LoadState.Loading && chat.connectionStatus.currentChannel != null } }
 
     Column {
         OutlinedTextField(
@@ -43,7 +43,7 @@ fun MessageInputView(chat: Chat) {
                 .onPreviewKeyEvent {
                     when {
                         it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {
-                            if (chat.userStatus.connectedAndAuthenticated()) {
+                            if (chat.connectionStatus.connectedAndAuthenticated()) {
                                 chat.sendMessage(model.message())
                                 model.setMessage("")
                             } else coroutineScope.launch {
