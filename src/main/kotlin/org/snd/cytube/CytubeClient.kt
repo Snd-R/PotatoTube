@@ -378,6 +378,18 @@ class CytubeClient(
         socket.on("closePoll") {
             eventHandler.closePoll()
         }
+        socket.on("updateEmote") {
+            val response = it[0] as JSONObject
+            val name = response.getString("name")
+            val image = response.getString("image")
+            eventHandler.onUpdateEmote(name, image)
+        }
+        socket.on("removeEmote") {
+            val response = it[0] as JSONObject
+            val name = response.getString("name")
+            val image = response.getString("image")
+            eventHandler.onRemoveEmote(name, image)
+        }
     }
 
     private fun parsePlaylistItem(json: JSONObject): PlaylistItem {

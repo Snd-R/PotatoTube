@@ -43,8 +43,7 @@ private fun createModel(): Channel {
             .setLevel(HttpLoggingInterceptor.Level.BASIC))
         .cookieJar(SimpleCookieJar())
         .build()
-    val discCache = DiscCache()
-    discCache.initialize()
+    val discCache = DiscCache().apply { initialize() }
     val imageLoader = ImageLoaderImpl(httpClient, discCache)
 
     val moshi = Moshi.Builder().build()

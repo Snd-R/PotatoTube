@@ -40,6 +40,10 @@ class Chat(
         addMessage(message)
     }
 
+    fun addSystemMessage(message: String) {
+        addMessage(Message.SystemMessage(message))
+    }
+
     fun addConnectionMessage(message: Message.ConnectionMessage) {
         addMessage(message)
     }
@@ -74,6 +78,21 @@ class Chat(
         emotes.forEach { emote -> channelEmotes[emote.name] = emote }
     }
 
+    fun updateEmote(emote: Emote) {
+        if (channelEmotes.containsKey(emote.name))
+            addSystemMessage("Emote ${emote.name} was updated")
+        else
+            addSystemMessage("Emote ${emote.name} was added")
+        channelEmotes[emote.name] = emote
+    }
+
+    fun removeEmote(emote: Emote) {
+        if (channelEmotes.containsKey(emote.name))
+            addSystemMessage("Emote ${emote.name} was removed")
+
+        channelEmotes.remove(emote.name)
+    }
+
     suspend fun login(username: String) {
         cytube.login(username, null)
     }
@@ -87,6 +106,7 @@ class Chat(
         ) : Message()
 
         data class AnnouncementMessage(val message: String) : Message()
+        data class SystemMessage(val message: String) : Message()
 
         data class ConnectionMessage(
             val message: String,

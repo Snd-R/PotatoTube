@@ -90,7 +90,7 @@ class CytubeEventHandler(
         coroutineScope.launch { channel.reconnect() }
     }
 
-    fun onChannelJoin(channelName:String) {
+    fun onChannelJoin(channelName: String) {
         channel.joinedChannel(channelName)
     }
 
@@ -113,6 +113,13 @@ class CytubeEventHandler(
 
     fun onNewPoll(poll: Poll) {
         channel.newPoll(poll)
+    }
+
+    fun onUpdateEmote(name: String, image: String) {
+        channel.chat.updateEmote(Chat.Emote(name = name, url = image))
+    }
+    fun onRemoveEmote(name: String, image: String) {
+        channel.chat.removeEmote(Chat.Emote(name = name, url = image))
     }
 
     fun updatePoll(poll: Poll) {

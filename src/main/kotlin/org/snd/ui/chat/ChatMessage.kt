@@ -34,6 +34,7 @@ import org.jsoup.parser.Parser
 import org.snd.image.Dimension
 import org.snd.ui.chat.Chat.Message.AnnouncementMessage
 import org.snd.ui.chat.Chat.Message.ConnectionMessage.ConnectionType.DISCONNECTED
+import org.snd.ui.chat.Chat.Message.SystemMessage
 import org.snd.ui.chat.Chat.Message.UserMessage
 import org.snd.ui.common.AppTheme
 import org.snd.ui.image.EmoteImage
@@ -61,6 +62,7 @@ fun ChatMessage(
 
         is Chat.Message.ConnectionMessage -> ConnectionMessage(fontSize, height, message)
         is AnnouncementMessage -> AnnouncementMessageView((fontSize.value + 5f).sp, message)
+        is SystemMessage -> SystemMessageView(((fontSize.value - 1f).coerceAtLeast(3f)).sp, message)
     }
 }
 
@@ -129,7 +131,20 @@ fun AnnouncementMessageView(
         color = AppTheme.colors.announcementMessageColor,
         modifier = Modifier.padding(3.dp)
     )
+}
 
+@Composable
+fun SystemMessageView(
+    fontSize: TextUnit,
+    message: SystemMessage,
+) {
+    Text(
+        text = message.message,
+        fontSize = fontSize,
+        fontWeight = FontWeight.Bold,
+        color = AppTheme.colors.systemMessageColor,
+        modifier = Modifier.padding(3.dp)
+    )
 }
 
 @Composable

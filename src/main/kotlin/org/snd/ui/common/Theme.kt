@@ -15,6 +15,7 @@ object AppTheme {
         val highlight: Color = Color(0XFFf2efd0),
         val buttonActive: Color = Color(0XFF34EB8F),
         val announcementMessageColor: Color = Color(0XFFF7A52A),
+        val systemMessageColor: Color = Color(0XFF9C9C9C),
         val green: Color = Color(0XFF4FD172),
 
         val guest: Color = Color(0XFF888888),
