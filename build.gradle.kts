@@ -2,10 +2,10 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.20"
-    kotlin("plugin.serialization") version "1.7.20"
-    id("org.jetbrains.compose") version "1.2.1"
-    id("com.google.devtools.ksp").version("1.7.20-1.0.7")
+    kotlin("jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.8.0"
+    id("org.jetbrains.compose") version "1.3.0"
+    id("com.google.devtools.ksp").version("1.8.0-1.0.9")
 }
 
 group = "org.snd"
@@ -47,8 +47,18 @@ dependencies {
 
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.ExperimentalStdlibApi"
+        )
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
 }
 
 compose.desktop {
