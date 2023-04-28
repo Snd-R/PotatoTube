@@ -1,27 +1,15 @@
-### Gradle
-.gradle
-!gradle/wrapper/gradle-wrapper.jar
-
-### Logs
-*.log
-*.log.*.gz
-
-### Temporary files
-*.tmp
-*.bak
-
-### IntelliJ IDEA
-.idea/*
-!/.idea/codeStyles/
-!/.idea/runConfigurations/
-*.iws
 *.iml
-*.ipr
-
-### NetBeans
-nbproject/private/
+.gradle
+/local.properties
+/.idea
+.DS_Store
 build/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
+/captures
+.externalNativeBuild
+.cxx
+iosApp/Podfile.lock
+iosApp/Pods/*
+iosApp/iosApp.xcworkspace/*
+iosApp/iosApp.xcodeproj/*
+!iosApp/iosApp.xcodeproj/project.pbxproj
+shared/shared.podspec
