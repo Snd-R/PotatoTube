@@ -30,6 +30,7 @@ fun VideoPlayer(
     state: VideoPlayerState,
     modifier: Modifier,
 ) {
+    var bitmap by remember { mutableStateOf(Bitmap()) }
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
 
     imageBitmap?.let {
@@ -44,13 +45,13 @@ fun VideoPlayer(
 
     val mediaPlayer = remember {
         var byteArray: ByteArray? = null
-        var info: ImageInfo? = null
         val factory = MediaPlayerFactory()
         val embeddedMediaPlayer = factory.mediaPlayers().newEmbeddedMediaPlayer()
         val callbackVideoSurface = CallbackVideoSurface(
             object : BufferFormatCallback {
                 override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
-                    info = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
+                    val imageInfo = ImageInfo.makeN32(sourceWidth, sourceHeight, ColorAlphaType.OPAQUE)
+                    bitmap = Bitmap().apply { allocPixels(imageInfo) }
                     return RV32BufferFormat(sourceWidth, sourceHeight)
                 }
 
@@ -69,10 +70,8 @@ fun VideoPlayer(
                     byteBuffer.get(byteArray)
                     byteBuffer.rewind()
 
-                    val bmp = Bitmap()
-                    bmp.allocPixels(info!!)
-                    bmp.installPixels(byteArray)
-                    imageBitmap = bmp.asComposeImageBitmap()
+                    bitmap.installPixels(byteArray)
+                    imageBitmap = bitmap.asComposeImageBitmap()
                 }
             },
             true,
@@ -83,20 +82,17 @@ fun VideoPlayer(
         embeddedMediaPlayer.events().addMediaPlayerEventListener(object : MediaPlayerEventAdapter() {
 
             override fun mediaPlayerReady(mediaPlayer: MediaPlayer) {
-                super.mediaPlayerReady(mediaPlayer)
                 state.setLength(mediaPlayer.status().length())
                 state.play()
             }
 
             override fun finished(mediaPlayer: MediaPlayer) {
-                super.finished(mediaPlayer)
                 state.pause()
                 state.setMrl(null)
                 state.timeState.updateInternally(0L)
             }
 
             override fun timeChanged(mediaPlayer: MediaPlayer, newTime: Long) {
-                super.timeChanged(mediaPlayer, newTime)
                 state.timeState.updateInternally(newTime)
             }
 
@@ -152,5 +148,4 @@ fun VideoPlayer(
             mediaPlayer.release()
         }
     }
-
 }
