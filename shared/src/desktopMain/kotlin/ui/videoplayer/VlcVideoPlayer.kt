@@ -26,7 +26,7 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32Buffe
 import java.nio.ByteBuffer
 
 @Composable
-fun VideoPlayer(
+fun VlcVideoPlayer(
     state: VideoPlayerState,
     modifier: Modifier,
 ) {

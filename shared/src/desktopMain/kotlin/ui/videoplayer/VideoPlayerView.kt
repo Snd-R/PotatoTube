@@ -40,7 +40,7 @@ actual fun VideoPlayerView(state: VideoPlayerState) {
             .onPointerEvent(PointerEventType.Release) { isClicked = false },
     ) {
         if (mrl != null) {
-            VideoPlayer(state, Modifier.align(Alignment.Center))
+            VlcVideoPlayer(state, Modifier.align(Alignment.Center))
             if (!isPlaying || isHovered || isClicked || isBuffering) {
                 VideoOverlay(state)
             }
