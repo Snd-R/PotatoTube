@@ -127,9 +127,10 @@ fun AddToQueueButton(model: Playlist) {
                 },
                 textStyle = TextStyle(fontSize = 14.sp),
                 modifier = Modifier
-                    .widthIn(max = 300.dp)
+                    .widthIn(min = 100.dp, max = 200.dp)
+                    .weight(1.0f)
             )
-            Button(onClick = {
+            TextButton(onClick = {
                 queueAddState = LoadState.Loading()
                 coroutineScope.launch {
                     queueAddState = model.cytube.queue(url = text, putLast = true, temp = true)

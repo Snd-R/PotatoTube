@@ -45,7 +45,7 @@ fun VerticalSplittable(
     val splitterPlaceable = measurables[2].measure(constraints)
     layout(constraints.maxWidth, constraints.maxHeight) {
         firstPlaceable.place(0, 0)
-        secondPlaceable.place(firstPlaceable.width, 0)
+        secondPlaceable.place(firstPlaceable.width + 4, 0)
         splitterPlaceable.place(firstPlaceable.width, 0)
     }
 })

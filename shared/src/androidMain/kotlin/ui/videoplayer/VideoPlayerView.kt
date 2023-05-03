@@ -3,6 +3,7 @@ package ui.videoplayer
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.C
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
 private val youtubeIdRegex = "(youtu.*be.*)/(watch\\?v=|embed/|v|shorts|)(.*?((?=[&#?])|\$))".toRegex()
 
 @Composable
-actual fun VideoPlayerView(state: VideoPlayerState) {
+actual fun VideoPlayerView(state: VideoPlayerState, modifier: Modifier) {
     val mrlState by state.mrl.collectAsState()
     val mrl = mrlState
 

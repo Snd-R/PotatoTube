@@ -11,6 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -19,9 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import platform.SplitterState
 import platform.VerticalSplittable
 import ui.chat.ChatView
@@ -61,7 +65,6 @@ private fun VerticalView(model: Channel) {
             VideoPanel(model)
         }
         Box(modifier = Modifier.fillMaxSize()) {
-
             ChatView(model.chat, model.settings)
         }
     }
@@ -95,6 +98,7 @@ private fun HorizontalView(model: Channel) {
         ResizablePanel(Modifier.width(animatedSize).fillMaxHeight(), panelState) {
             ChatView(model.chat, model.settings)
         }
+
         VideoPanel(model)
     }
 
@@ -133,26 +137,54 @@ private fun ResizablePanel(
 private fun VideoPanel(model: Channel) {
 
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier.verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        VideoPlayerView(model.player)
+
+        val playerHeight = if (model.settings.isActiveScreen) Modifier.size(0.dp)
+        else when (LocalOrientation.current) {
+            Orientation.LANDSCAPE -> Modifier.heightIn(min = 0.dp, max = LocalWindowHeight.current)
+            Orientation.PORTRAIT -> Modifier
+        }
+
+        Box {
+            VideoPlayerView(model.player, playerHeight)
+            val (maxScroll, currentScroll) = with(LocalDensity.current) { scrollState.maxValue.toDp() to scrollState.value.toDp() }
+
+            if (maxScroll > 50.dp && currentScroll < 50.dp && scrollState.canScrollForward) {
+                TextButton(
+                    modifier =
+                    if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)
+                    else Modifier.align(Alignment.BottomCenter),
+                    onClick = {
+                        coroutineScope.launch {
+                            scrollState.animateScrollTo(scrollState.maxValue)
+                        }
+                    }) {
+                    Text("Scroll down")
+                }
+            }
+        }
         Spacer(Modifier.size(5.dp))
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Box(
-                modifier = Modifier
-                    .padding(start = 10.dp, top = 10.dp)
-                    .fillMaxWidth(0.5f)
-            ) {
-                if (model.poll.currentPoll)
+            Spacer(Modifier.weight(1.0f))
+            if (model.poll.currentPoll) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 10.dp, top = 10.dp)
+                        .fillMaxWidth(0.5f)
+                ) {
                     PollMainView(model.poll)
+                }
             }
             Box(
                 modifier = Modifier
                     .heightIn(max = 400.dp)
+                    .widthIn(max = 1000.dp)
                     .fillMaxWidth()
             ) {
                 PlaylistView(model.playlist)

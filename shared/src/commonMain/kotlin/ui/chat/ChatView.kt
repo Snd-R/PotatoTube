@@ -37,8 +37,6 @@ fun ChatView(model: Chat, settings: SettingsModel) = Surface(
 
 @Composable
 private fun ChatPanel(model: Chat) {
-    val scope = rememberCoroutineScope()
-
     Column {
         ChannelBar(model)
         Divider()

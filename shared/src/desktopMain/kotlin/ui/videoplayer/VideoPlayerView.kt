@@ -16,37 +16,55 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.dp
-import ui.common.LocalWindowHeight
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-actual fun VideoPlayerView(state: VideoPlayerState) {
-    var isHovered by remember { mutableStateOf(false) }
-    var isClicked by remember { mutableStateOf(false) }
-    val isPlaying by state.isPlaying.collectAsState()
-    val isBuffering by state.isBuffering.collectAsState()
-    val mrl by state.mrl.collectAsState()
-    val height = LocalWindowHeight.current
-    Box(
-        modifier = Modifier
-            .background(Color.Black)
-            .fillMaxSize()
-            .heightIn(max = height - 100.dp)
-            .fillMaxWidth()
-            .onPointerEvent(PointerEventType.Enter) { isHovered = true }
-            .onPointerEvent(PointerEventType.Exit) { isHovered = false }
-            .onPointerEvent(PointerEventType.Press) { isClicked = true }
-            .onPointerEvent(PointerEventType.Release) { isClicked = false },
-    ) {
-        if (mrl != null) {
-            VlcVideoPlayer(state, Modifier.align(Alignment.Center))
-            if (!isPlaying || isHovered || isClicked || isBuffering) {
-                VideoOverlay(state)
-            }
+actual fun VideoPlayerView(state: VideoPlayerState, modifier: Modifier) =
+    Layout({
+        var isHovered by remember { mutableStateOf(false) }
+        var isClicked by remember { mutableStateOf(false) }
+        val mrl by state.mrl.collectAsState()
+
+        Box(
+            modifier = Modifier
+                .background(Color.Black)
+                .fillMaxWidth()
+                .then(modifier)
+                .onPointerEvent(PointerEventType.Enter) { isHovered = true }
+                .onPointerEvent(PointerEventType.Exit) { isHovered = false }
+                .onPointerEvent(PointerEventType.Press) { isClicked = true }
+                .onPointerEvent(PointerEventType.Release) { isClicked = false },
+            contentAlignment = Alignment.Center
+        ) {
+            if (mrl != null)
+                VlcEmbeddedVideoPlayer(state, modifier)
+            else Box(Modifier.aspectRatio(1.735f))
         }
-    }
-}
+        VideoControlsOverlay(state, Modifier.fillMaxWidth())
+    },
+        measurePolicy = { measurables, constraints ->
+            if (measurables.isEmpty()) return@Layout layout(0, 0) {}
+            require(measurables.size == 2)
+
+            val controls = measurables[1].measure(constraints.copy())
+            val playerMeasurable = measurables[0]
+            val playerHeight = playerMeasurable.maxIntrinsicHeight(constraints.maxWidth)
+            val playerRealHeight = (playerHeight - controls.height).coerceAtLeast(0)
+            val player = playerMeasurable.measure(
+                constraints.copy(
+                    maxHeight = playerRealHeight,
+                    maxWidth = constraints.maxWidth
+                )
+            )
+
+            layout(constraints.maxWidth, controls.height + player.height) {
+                player.place(0, 0)
+                controls.place(0, player.height)
+            }
+        })
 
 @Composable
 fun VideoOverlay(state: VideoPlayerState) {
@@ -84,12 +102,9 @@ fun VideoControlsOverlay(state: VideoPlayerState, modifier: Modifier = Modifier)
     val isPlaying by state.isPlaying.collectAsState()
 
     Column(modifier = modifier) {
-        Slider(
-            value = time / length.toFloat(),
-            onValueChange = { state.seekTo((it * length).toLong()) },
-            modifier = Modifier.fillMaxWidth().height(15.dp),
-            colors = SliderDefaults.colors(inactiveTrackColor = Color.LightGray),
-            enabled = false,
+        LinearProgressIndicator(
+            progress = time / length.toFloat(),
+            modifier = Modifier.fillMaxWidth(),
         )
         Row(
             modifier = Modifier

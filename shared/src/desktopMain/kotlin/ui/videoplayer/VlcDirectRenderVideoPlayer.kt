@@ -1,5 +1,6 @@
 package ui.videoplayer
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,8 +26,9 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
 import java.nio.ByteBuffer
 
+
 @Composable
-fun VlcVideoPlayer(
+fun VlcDirectRenderVideoPlayer(
     state: VideoPlayerState,
     modifier: Modifier,
 ) {
@@ -34,7 +36,7 @@ fun VlcVideoPlayer(
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
 
     imageBitmap?.let {
-        androidx.compose.foundation.Image(
+        Image(
             bitmap = it,
             contentDescription = "Video",
             modifier = modifier.then(Modifier.fillMaxSize())

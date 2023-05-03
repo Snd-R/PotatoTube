@@ -38,6 +38,7 @@ class VideoPlayerState(
     fun unmute() {
         isMuted.value = false
     }
+
     fun mute() {
         isMuted.value = true
     }
@@ -57,7 +58,6 @@ class VideoPlayerState(
     fun setVolume(volume: Int) {
         this.volume.value = volume
     }
-
 
     fun sync(newTime: Long, paused: Boolean) {
         val timeDiff = (newTime - timeState.time.value).absoluteValue

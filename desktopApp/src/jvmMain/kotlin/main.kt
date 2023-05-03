@@ -7,6 +7,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import java.awt.Dimension
 
 val state = createState()
 
@@ -22,9 +23,11 @@ fun main() = application {
         state = windowState,
         icon = BitmapPainter(useResource("ic_launcher.png", ::loadImageBitmap)),
     ) {
+        window.minimumSize = Dimension(500, 500)
+        val horizontalInsets = window.insets.top + window.insets.bottom
         MainView(
             state = state,
-            windowHeight = windowState.size.height,
+            windowHeight = windowState.size.height - horizontalInsets.dp,
             windowWidth = windowState.size.width,
         )
     }
