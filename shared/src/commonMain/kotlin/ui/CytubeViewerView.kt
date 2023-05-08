@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -150,10 +152,26 @@ private fun VideoPanel(model: Channel) {
         }
 
         Box {
-            VideoPlayerView(model.player, playerHeight)
-            val (maxScroll, currentScroll) = with(LocalDensity.current) { scrollState.maxValue.toDp() to scrollState.value.toDp() }
+            model.settings.playerType?.let { player ->
+                VideoPlayerView(
+                    model.player,
+                    player,
+                    playerHeight,
+                    scrollState,
+                )
+            } ?: run {
+                Box(
+                    modifier = Modifier.background(Color.Black).then(playerHeight).aspectRatio(1.735f),
+                    contentAlignment = Alignment.Center
 
-            if (maxScroll > 50.dp && currentScroll < 50.dp && scrollState.canScrollForward) {
+                ) {
+                    Text("Player Unavailable")
+                }
+
+            }
+
+            val maxScroll = with(LocalDensity.current) { scrollState.maxValue.toDp() }
+            if (maxScroll > 50.dp && scrollState.canScrollForward) {
                 TextButton(
                     modifier =
                     if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)

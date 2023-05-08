@@ -3,6 +3,7 @@ rootProject.name = "Potatotube"
 include(":androidApp")
 include(":shared")
 include(":desktopApp")
+include(":mpv")
 
 pluginManagement {
     repositories {

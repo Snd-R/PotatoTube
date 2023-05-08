@@ -27,19 +27,16 @@ fun VlcEmbeddedVideoPlayer(
     val factory = remember { { mediaPlayerComponent } }
 
     val mrl by state.mrl.collectAsState()
-    val updatedExternally by state.timeState.updatedExternallyToggle.collectAsState()
-    val time by state.timeState.time.collectAsState()
     val isPlaying by state.isPlaying.collectAsState()
-    val volume by state.volume.collectAsState()
     val isMuted by state.isMuted.collectAsState()
+    val volume by state.volume.collectAsState()
+    val updatedExternally by state.timeState.updatedExternallyToggle.collectAsState()
 
-    LaunchedEffect(key1 = mrl) {
-        launch { mediaPlayer.media().play(mrl) }
-    }
+    LaunchedEffect(mrl) { mediaPlayer.media().play(mrl) }
 
     LaunchedEffect(updatedExternally) {
         withContext(Dispatchers.IO) {
-            launch { mediaPlayer.controls().setTime(time) }
+            launch { mediaPlayer.controls().setTime(state.timeState.time.value) }
         }
     }
 
@@ -75,10 +72,6 @@ fun VlcEmbeddedVideoPlayer(
     )
 }
 
-/**
- * See https://github.com/caprica/vlcj/issues/887#issuecomment-503288294
- * for why we're using CallbackMediaPlayerComponent for macOS.
- */
 private fun initializeMediaPlayerComponent(state: VideoPlayerState): Component {
     NativeDiscovery().discover()
     val listener = object : MediaPlayerEventAdapter() {
@@ -114,30 +107,6 @@ private fun initializeMediaPlayerComponent(state: VideoPlayerState): Component {
     return component
 }
 
-/**
- * We play the video again on finish (so the player is kind of idempotent),
- * unless the [onFinish] callback stops the playback.
- * Using `mediaPlayer.controls().repeat = true` did not work as expected.
- */
-@Composable
-private fun MediaPlayer.setupVideoFinishHandler(onFinish: (() -> Unit)?) {
-    DisposableEffect(onFinish) {
-        val listener = object : MediaPlayerEventAdapter() {
-            override fun stopped(mediaPlayer: MediaPlayer) {
-                onFinish?.invoke()
-                mediaPlayer.controls().play()
-            }
-        }
-        events().addMediaPlayerEventListener(listener)
-        onDispose { events().removeMediaPlayerEventListener(listener) }
-    }
-}
-
-/**
- * Returns [MediaPlayer] from player components.
- * The method names are the same, but they don't share the same parent/interface.
- * That's why we need this method.
- */
 private fun Component.mediaPlayer() = when (this) {
     is CallbackMediaPlayerComponent -> mediaPlayer()
     is EmbeddedMediaPlayerComponent -> mediaPlayer()

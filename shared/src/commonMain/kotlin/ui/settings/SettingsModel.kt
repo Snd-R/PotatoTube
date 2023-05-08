@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.sp
 import cytube.CytubeClient
+import player.PlayerType
 import settings.Settings
 import settings.SettingsRepository
 import ui.ConnectionStatus
@@ -26,15 +27,19 @@ class SettingsModel(
     var syncThreshold by mutableStateOf(2000L)
     var isLoading by mutableStateOf(false)
 
+    var playerType by mutableStateOf<PlayerType?>(null)
+
     suspend fun save() {
         settingsRepository.saveSettings(
             Settings(
                 fontSize = fontSize.value,
                 emoteSize = emoteSize.value,
+                isTimestampsEnabled = isTimestampsEnabled,
                 timestampFormat = timestampFormat,
                 historySize = historySize,
                 currentChannel = channel,
-                accountName = username
+                accountName = username,
+                player = playerType
             )
         )
     }

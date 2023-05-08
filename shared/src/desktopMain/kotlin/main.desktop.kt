@@ -7,10 +7,13 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import player.PlayerDiscovery
 import ui.Channel
 import ui.createModel
 
 fun createState(): Channel {
+    PlayerDiscovery.discover()
+
     val httpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor { message -> KotlinLogging.logger { }.info { message } }
             .setLevel(HttpLoggingInterceptor.Level.BASIC))

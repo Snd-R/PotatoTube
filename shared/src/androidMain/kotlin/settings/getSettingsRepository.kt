@@ -1,12 +1,16 @@
 package settings
 
+import player.PlayerType
+
 actual fun getSettingsRepository(): SettingsRepository {
     return object : SettingsRepository {
         override suspend fun loadSettings(): Settings {
             return Settings(
                 fontSize = 13f,
                 emoteSize = 70f,
-                timestampFormat = "mm:ss"
+                isTimestampsEnabled = false,
+                timestampFormat = "mm:ss",
+                player = PlayerType("")
             )
         }
 
@@ -22,6 +26,5 @@ actual fun getSettingsRepository(): SettingsRepository {
 
         override fun deletePassword(user: String) {
         }
-
     }
 }

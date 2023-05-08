@@ -3,7 +3,7 @@ package ui.videoplayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,16 +39,19 @@ fun VlcDirectRenderVideoPlayer(
         Image(
             bitmap = it,
             contentDescription = "Video",
-            modifier = modifier.then(Modifier.fillMaxSize())
+            modifier = modifier.then(Modifier.aspectRatio(1.735f))
         )
     } ?: run {
-        Box(modifier = modifier.background(Color.Black))
+        Box(
+            modifier = modifier
+                .background(Color.Black)
+                .aspectRatio(1.735f)
+        )
     }
 
     val mediaPlayer = remember {
         var byteArray: ByteArray? = null
-        val factory = MediaPlayerFactory()
-        val embeddedMediaPlayer = factory.mediaPlayers().newEmbeddedMediaPlayer()
+        val embeddedMediaPlayer = MediaPlayerFactory().mediaPlayers().newEmbeddedMediaPlayer()
         val callbackVideoSurface = CallbackVideoSurface(
             object : BufferFormatCallback {
                 override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
@@ -106,19 +109,16 @@ fun VlcDirectRenderVideoPlayer(
     }
 
     val mrl by state.mrl.collectAsState()
-    val updatedExternally by state.timeState.updatedExternallyToggle.collectAsState()
-    val time by state.timeState.time.collectAsState()
     val isPlaying by state.isPlaying.collectAsState()
-    val volume by state.volume.collectAsState()
     val isMuted by state.isMuted.collectAsState()
+    val volume by state.volume.collectAsState()
+    val updatedExternally by state.timeState.updatedExternallyToggle.collectAsState()
 
-    LaunchedEffect(key1 = mrl) {
-        launch { mediaPlayer.media().play(mrl) }
-    }
+    LaunchedEffect(mrl) { mediaPlayer.media().play(mrl) }
 
     LaunchedEffect(updatedExternally) {
         withContext(Dispatchers.IO) {
-            launch { mediaPlayer.controls().setTime(time) }
+            launch { mediaPlayer.controls().setTime(state.timeState.time.value) }
         }
     }
 
@@ -144,10 +144,5 @@ fun VlcDirectRenderVideoPlayer(
             launch { mediaPlayer.audio().isMute = isMuted }
         }
     }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            mediaPlayer.release()
-        }
-    }
+    DisposableEffect(Unit) { onDispose { mediaPlayer.release() } }
 }

@@ -8,6 +8,8 @@ import com.github.javakeyring.PasswordAccessException
 import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import player.PlayerDiscovery.getFirstAvailablePlayer
+import player.PlayerDiscovery.isPlayerAvailable
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createFile
@@ -19,7 +21,7 @@ actual fun getSettingsRepository(): SettingsRepository = SettingsRepositoryDeskt
 private const val SETTINGS_FILE = "potatotube.yml"
 private const val KEYRING_SERVICE_NAME = "potatotube"
 
-class SettingsRepositoryDesktop: SettingsRepository {
+class SettingsRepositoryDesktop : SettingsRepository {
     private val keyring = Keyring.create()
     private val configDir = Path.of(
         ProjectDirectories.from("org", "snd", "PotatoTube").configDir
@@ -31,7 +33,11 @@ class SettingsRepositoryDesktop: SettingsRepository {
             val rawConfig = if (path.isReadable()) Files.readString(path) else null
 
             rawConfig?.let { Yaml.default.decodeFromString(Settings.serializer(), it) }
-                ?: Settings()
+                ?.let {
+                    if (it.player == null || !isPlayerAvailable(it.player.player)) it.copy(player = getFirstAvailablePlayer())
+                    else it
+                }
+                ?: Settings(player = getFirstAvailablePlayer())
         }
     }
 

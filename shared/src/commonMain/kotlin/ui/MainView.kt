@@ -30,13 +30,18 @@ fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): Channel {
 
     val settings = runBlocking {
         val config = settingsRepository.loadSettings()
-        SettingsModel(connectionStatus, settingsRepository, cytubeClient).apply {
+        SettingsModel(
+            connectionStatus,
+            settingsRepository,
+            cytubeClient
+        ).apply {
             fontSize = config.fontSize.sp
             timestampFormat = config.timestampFormat
             emoteSize = config.emoteSize.sp
             historySize = config.historySize
             username = config.accountName
             channel = config.currentChannel
+            playerType = config.player
         }
     }
 

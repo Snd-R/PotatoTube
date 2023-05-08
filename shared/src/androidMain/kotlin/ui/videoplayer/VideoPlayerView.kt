@@ -2,6 +2,7 @@ package ui.videoplayer
 
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.compose.foundation.ScrollState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,12 +23,18 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import player.PlayerType
 
 
 private val youtubeIdRegex = "(youtu.*be.*)/(watch\\?v=|embed/|v|shorts|)(.*?((?=[&#?])|\$))".toRegex()
 
 @Composable
-actual fun VideoPlayerView(state: VideoPlayerState, modifier: Modifier) {
+actual fun VideoPlayerView(
+    state: VideoPlayerState,
+    type: PlayerType,
+    modifier: Modifier,
+    scrollState: ScrollState
+) {
     val mrlState by state.mrl.collectAsState()
     val mrl = mrlState
 

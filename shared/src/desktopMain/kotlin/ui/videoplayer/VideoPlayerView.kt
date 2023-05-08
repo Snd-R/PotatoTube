@@ -1,49 +1,50 @@
 package ui.videoplayer
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.Slider
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.dp
+import player.Player
+import player.PlayerType
 
-
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-actual fun VideoPlayerView(state: VideoPlayerState, modifier: Modifier) =
+actual fun VideoPlayerView(
+    state: VideoPlayerState,
+    type: PlayerType,
+    modifier: Modifier,
+    scrollState: ScrollState
+) =
     Layout({
-        var isHovered by remember { mutableStateOf(false) }
-        var isClicked by remember { mutableStateOf(false) }
-        val mrl by state.mrl.collectAsState()
-
         Box(
             modifier = Modifier
                 .background(Color.Black)
                 .fillMaxWidth()
-                .then(modifier)
-                .onPointerEvent(PointerEventType.Enter) { isHovered = true }
-                .onPointerEvent(PointerEventType.Exit) { isHovered = false }
-                .onPointerEvent(PointerEventType.Press) { isClicked = true }
-                .onPointerEvent(PointerEventType.Release) { isClicked = false },
+                .then(modifier),
             contentAlignment = Alignment.Center
         ) {
-            if (mrl != null)
-                VlcEmbeddedVideoPlayer(state, modifier)
+            val mrl by state.mrl.collectAsState()
+            if (mrl != null) when (type.player) {
+                Player.VLC_DIRECT -> VlcDirectRenderVideoPlayer(state, modifier)
+                Player.VLC_EMBEDDED -> VlcEmbeddedVideoPlayer(state, modifier)
+                Player.MPV_EMBEDDED -> MpvEmbeddedVideoPlayer(state, modifier, scrollState)
+            }
             else Box(Modifier.aspectRatio(1.735f))
         }
-        VideoControlsOverlay(state, Modifier.fillMaxWidth())
+        VideoControls(state, Modifier.fillMaxWidth())
     },
         measurePolicy = { measurables, constraints ->
             if (measurables.isEmpty()) return@Layout layout(0, 0) {}
@@ -67,36 +68,7 @@ actual fun VideoPlayerView(state: VideoPlayerState, modifier: Modifier) =
         })
 
 @Composable
-fun VideoOverlay(state: VideoPlayerState) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight(0.4f)
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.2f),
-                        )
-                    )
-                )
-        )
-
-        val isBuffering by state.isBuffering.collectAsState()
-        if (isBuffering) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
-        }
-
-        VideoControlsOverlay(
-            state, Modifier.align(Alignment.BottomCenter)
-        )
-    }
-}
-
-@Composable
-fun VideoControlsOverlay(state: VideoPlayerState, modifier: Modifier = Modifier) {
+fun VideoControls(state: VideoPlayerState, modifier: Modifier = Modifier) {
     val time by state.timeState.time.collectAsState()
     val length by state.length.collectAsState()
     val isPlaying by state.isPlaying.collectAsState()

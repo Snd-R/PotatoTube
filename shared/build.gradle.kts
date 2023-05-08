@@ -33,7 +33,7 @@ kotlin {
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
-                implementation("org.slf4j:slf4j-api:2.0.6")
+                implementation("org.slf4j:slf4j-api:2.0.7")
                 implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
                 implementation("com.squareup.okhttp3:okhttp:4.10.0")
@@ -50,9 +50,9 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.activity:activity-compose:1.6.1")
+                api("androidx.activity:activity-compose:1.7.1")
                 api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.9.0")
+                api("androidx.core:core-ktx:1.10.0")
 
                 implementation("io.socket:socket.io-client:2.1.0") {
                     exclude(group = "org.json", module = "json")
@@ -78,13 +78,15 @@ kotlin {
                 implementation("io.socket:socket.io-client:2.1.0")
                 implementation("org.json:json:20230227")
 
-                implementation("uk.co.caprica:vlcj:4.8.2")
                 implementation("com.twelvemonkeys.imageio:imageio-core:3.9.4")
                 runtimeOnly("com.twelvemonkeys.imageio:imageio-jpeg:3.9.4")
                 implementation("org.apache.tika:tika-core:2.7.0")
 
-                implementation("com.github.javakeyring:java-keyring:1.0.1")
+                implementation("com.github.javakeyring:java-keyring:1.0.2")
                 implementation("dev.dirs:directories:26")
+
+                implementation(project(":mpv"))
+                implementation("uk.co.caprica:vlcj:4.8.2")
             }
         }
     }

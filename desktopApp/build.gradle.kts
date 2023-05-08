@@ -20,12 +20,14 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "MainKt"
+        jvmArgs += listOf("--enable-preview", "--enable-native-access=ALL-UNNAMED")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "PotatoTube"
             packageVersion = "1.0.0"
             includeAllModules = true
+            jvmArgs += listOf("--enable-preview", "--enable-native-access=ALL-UNNAMED")
         }
     }
 }
