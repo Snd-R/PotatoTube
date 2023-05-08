@@ -1,7 +1,6 @@
-package platform
+package ui.platform
 
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -9,7 +8,4 @@ import androidx.compose.ui.Modifier
 actual fun VerticalScrollbar(
     modifier: Modifier,
     scrollState: LazyListState
-) = androidx.compose.foundation.VerticalScrollbar(
-    rememberScrollbarAdapter(scrollState),
-    modifier
-)
+) = Unit

@@ -3,27 +3,24 @@ package ui.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Slider
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import platform.LoaderOverlay
 import ui.common.AppTheme
 import kotlin.math.roundToInt
 
 
 @Composable
-fun SettingsView(model: SettingsModel) {
+fun SettingsView(model: SettingsState) {
     Box {
         Row(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -44,23 +41,28 @@ fun SettingsView(model: SettingsModel) {
                         .padding(10.dp)
                 ) {
                     when (model.currentTab) {
-                        SettingsModel.CurrentTab.CHAT -> ChatSettings(model)
-                        SettingsModel.CurrentTab.ACCOUNT -> AccountSettings(model)
-                        SettingsModel.CurrentTab.CHANNEL -> ChannelSettings(model)
-                        SettingsModel.CurrentTab.PLAYBACK -> PlaybackSettings(model)
+                        SettingsState.CurrentTab.CHAT -> ChatSettings(model)
+                        SettingsState.CurrentTab.ACCOUNT -> AccountSettings(model)
+                        SettingsState.CurrentTab.CHANNEL -> ChannelSettings(model)
+                        SettingsState.CurrentTab.PLAYBACK -> PlaybackSettings(model)
                     }
                 }
             }
             Box(modifier = Modifier.fillMaxWidth())
         }
         if (model.isLoading) {
-            LoaderOverlay()
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .pointerInput(Unit) {},
+            )
         }
     }
 }
 
 @Composable
-fun SettingTabs(settings: SettingsModel, modifier: Modifier = Modifier) {
+fun SettingTabs(settings: SettingsState, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .widthIn(min = 300.dp, max = 300.dp)
@@ -75,33 +77,39 @@ fun SettingTabs(settings: SettingsModel, modifier: Modifier = Modifier) {
         Text("Chat", modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 5.dp)
-            .clickable { settings.currentTab = SettingsModel.CurrentTab.CHAT }
-            .background(if (settings.currentTab == SettingsModel.CurrentTab.CHAT) AppTheme.colors.backgroundLight else AppTheme.colors.backgroundDarker)
+            .clickable { settings.currentTab = SettingsState.CurrentTab.CHAT }
+            .background(
+                if (settings.currentTab == SettingsState.CurrentTab.CHAT) AppTheme.colors.backgroundLight
+                else AppTheme.colors.backgroundDarker
+            )
         )
 
         Text("Account", modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 5.dp)
-            .clickable {
-                settings.currentTab = SettingsModel.CurrentTab.ACCOUNT
-            }
-            .background(if (settings.currentTab == SettingsModel.CurrentTab.ACCOUNT) AppTheme.colors.backgroundLight else AppTheme.colors.backgroundDarker)
+            .clickable { settings.currentTab = SettingsState.CurrentTab.ACCOUNT }
+            .background(
+                if (settings.currentTab == SettingsState.CurrentTab.ACCOUNT) AppTheme.colors.backgroundLight
+                else AppTheme.colors.backgroundDarker
+            )
         )
         Text("Channel", modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 5.dp)
-            .clickable {
-                settings.currentTab = SettingsModel.CurrentTab.CHANNEL
-            }
-            .background(if (settings.currentTab == SettingsModel.CurrentTab.CHANNEL) AppTheme.colors.backgroundLight else AppTheme.colors.backgroundDarker)
+            .clickable { settings.currentTab = SettingsState.CurrentTab.CHANNEL }
+            .background(
+                if (settings.currentTab == SettingsState.CurrentTab.CHANNEL) AppTheme.colors.backgroundLight
+                else AppTheme.colors.backgroundDarker
+            )
         )
         Text("Playback", modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 5.dp)
-            .clickable {
-                settings.currentTab = SettingsModel.CurrentTab.PLAYBACK
-            }
-            .background(if (settings.currentTab == SettingsModel.CurrentTab.PLAYBACK) AppTheme.colors.backgroundLight else AppTheme.colors.backgroundDarker)
+            .clickable { settings.currentTab = SettingsState.CurrentTab.PLAYBACK }
+            .background(
+                if (settings.currentTab == SettingsState.CurrentTab.PLAYBACK) AppTheme.colors.backgroundLight
+                else AppTheme.colors.backgroundDarker
+            )
         )
 
         Divider()
@@ -113,7 +121,7 @@ fun SettingTabs(settings: SettingsModel, modifier: Modifier = Modifier) {
                 coroutineScope.launch {
                     settings.isLoading = true
                     settings.save()
-                    settings.currentTab = SettingsModel.CurrentTab.CHAT
+                    settings.currentTab = SettingsState.CurrentTab.CHAT
                     settings.isLoading = false
                     settings.isActiveScreen = false
                 }

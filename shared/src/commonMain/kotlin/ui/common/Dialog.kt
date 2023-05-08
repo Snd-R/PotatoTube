@@ -36,7 +36,7 @@ fun OverlayDialog(
             Surface(
                 Modifier
                     .align(Alignment.Center)
-                    .widthIn(max = MaxModalBottomSheetWidth)
+                    .widthIn(max = MaxSheetWidth)
                     .fillMaxWidth(),
             ) {
                 Column(content = overlayContent)
@@ -81,4 +81,4 @@ enum class OverlayDialogValue {
     Shown
 }
 
-private val MaxModalBottomSheetWidth = 1200.dp
+private val MaxSheetWidth = 1200.dp

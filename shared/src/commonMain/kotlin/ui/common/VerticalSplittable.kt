@@ -1,4 +1,4 @@
-package platform
+package ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import ui.common.AppTheme
+import ui.platform.cursorForHorizontalResize
 
 @Composable
 fun VerticalSplittable(

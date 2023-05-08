@@ -21,11 +21,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import platform.Tooltip
 import ui.common.AppTheme
+import ui.platform.Tooltip
 
 @Composable
-fun ChannelBar(model: Chat) {
+fun ChannelBar(model: ChatState) {
     val userCountState by model.users.userCount.collectAsState()
     Row {
         Column(
@@ -76,7 +76,7 @@ fun ChannelBar(model: Chat) {
 }
 
 @Composable
-fun ConnectedUsersTooltip(model: Chat.Users) {
+fun ConnectedUsersTooltip(model: ChatState.Users) {
     val siteAdmins by model.siteAdmins.collectAsState()
     val channelAdmins by model.channelAdmins.collectAsState()
     val moderators by model.moderators.collectAsState()

@@ -28,24 +28,18 @@ fun PollChatView(poll: PollState) {
     Column(modifier = Modifier.padding(10.dp)) {
         Row {
             Column {
-                Row(modifier = Modifier.clickable {
-                    expanded = !expanded
-                }
-                ) {
+                Row(modifier = Modifier.clickable { expanded = !expanded }) {
                     if (poll.closed) Text("Poll ended", fontSize = 12.sp, modifier = Modifier.padding(top = 3.dp))
-                    else
-                        Text("Current Poll", fontSize = 12.sp, modifier = Modifier.padding(top = 3.dp))
+                    else Text("Current Poll", fontSize = 12.sp, modifier = Modifier.padding(top = 3.dp))
                     Icon(
                         if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = "Options",
                         tint = Color.LightGray,
-                        modifier = Modifier
-                            .size(20.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
                 Text(poll.title, modifier = Modifier.padding(start = 10.dp))
             }
-
 
             Spacer(Modifier.weight(1f))
             Icon(
@@ -55,9 +49,7 @@ fun PollChatView(poll: PollState) {
                 modifier = Modifier
                     .width(20.dp)
                     .height(20.dp)
-                    .clickable {
-                        poll.hideChatPoll()
-                    }
+                    .clickable { poll.hideChatPoll() }
             )
         }
 
@@ -74,7 +66,6 @@ fun PollMainView(poll: PollState) {
             .clip(RoundedCornerShape(10.dp))
             .background(AppTheme.colors.backgroundDark)
             .widthIn(min = 300.dp, max = 300.dp)
-//            .fillMaxWidth(0.7f)
             .padding(10.dp)
     ) {
         Row(modifier = Modifier.padding(start = 5.dp, end = 5.dp, bottom = 5.dp)) {
@@ -91,10 +82,7 @@ fun PollMainView(poll: PollState) {
                     tint = Color.LightGray,
                     modifier = Modifier.size(20.dp)
                 )
-                Text(
-                    " Ended",
-                    maxLines = 2
-                )
+                Text(" Ended", maxLines = 2)
             }
         }
         PollOptions(poll)
@@ -119,7 +107,8 @@ fun PollOptions(poll: PollState) {
             .clickable(enabled = !poll.closed) { poll.vote(it) }
         ) {
             Text(
-                it.name, modifier = Modifier.padding(start = 10.dp),
+                it.name,
+                modifier = Modifier.padding(start = 10.dp),
                 maxLines = 2
             )
             Spacer(Modifier.weight(1f))

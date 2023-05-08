@@ -16,7 +16,7 @@ import player.PlayerDiscovery
 import player.PlayerType
 
 @Composable
-actual fun PlayerTypeSettings(model: SettingsModel) {
+actual fun PlayerTypeSettings(model: SettingsState) {
     Column {
         Text("Player Type")
         PlayerTypeOption(model, Player.MPV_EMBEDDED)
@@ -26,7 +26,7 @@ actual fun PlayerTypeSettings(model: SettingsModel) {
 }
 
 @Composable
-fun PlayerTypeOption(model: SettingsModel, type: Player) {
+fun PlayerTypeOption(model: SettingsState, type: Player) {
     val currentType = model.playerType?.player
     val (playerName, isAvailable) = when (type) {
         Player.VLC_EMBEDDED -> "VLC Embedded" to PlayerDiscovery.isVlcEmbeddedAvailable

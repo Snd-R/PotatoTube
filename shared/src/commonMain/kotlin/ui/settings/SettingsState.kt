@@ -8,9 +8,9 @@ import cytube.CytubeClient
 import player.PlayerType
 import settings.Settings
 import settings.SettingsRepository
-import ui.ConnectionStatus
+import ui.channel.ConnectionStatus
 
-class SettingsModel(
+class SettingsState(
     val connectionStatus: ConnectionStatus,
     val settingsRepository: SettingsRepository,
     private val cytube: CytubeClient,

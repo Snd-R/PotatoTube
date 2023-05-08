@@ -1,4 +1,4 @@
-package platform
+package ui.platform
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon

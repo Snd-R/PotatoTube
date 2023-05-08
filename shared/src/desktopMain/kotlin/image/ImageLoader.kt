@@ -30,9 +30,9 @@ import org.jetbrains.compose.animatedimage.animate
 import org.jetbrains.compose.resources.LoadState
 import org.jetbrains.skia.Codec
 import org.jetbrains.skia.Data
-import platform.Tooltip
-import ui.chat.Chat
+import ui.chat.ChatState
 import ui.common.AppTheme
+import ui.platform.Tooltip
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,8 +43,8 @@ class DesktopImageLoader(
 
     @Composable
     override fun LoadEmoteImage(
-        emote: Chat.Emote,
-        dimension: Chat.EmoteDimension,
+        emote: ChatState.Emote,
+        dimension: ChatState.EmoteDimension,
         scaleTo: Dimension?
     ) {
         val state: MutableState<LoadState<AnimatedImage>> = remember { mutableStateOf(LoadState.Loading()) }
@@ -96,7 +96,7 @@ class DesktopImageLoader(
 
     @Composable
     fun EmoteImage(
-        emote: Chat.Emote,
+        emote: ChatState.Emote,
         image: ImageBitmap,
     ) {
         Image(
@@ -110,7 +110,7 @@ class DesktopImageLoader(
 
     @Composable
     fun EmoteTooltip(
-        emote: Chat.Emote,
+        emote: ChatState.Emote,
         content: @Composable () -> Unit
     ) {
         DisableSelection { // workaround for selectable container https://github.com/JetBrains/compose-jb/issues/2055

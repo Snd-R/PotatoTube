@@ -7,13 +7,12 @@ import androidx.compose.runtime.setValue
 import cytube.CytubeClient
 import cytube.YOUTUBE_PREFIX
 
-class Playlist(val cytube: CytubeClient) {
+class PlaylistState(val cytube: CytubeClient) {
     var rawTime by mutableStateOf(0L)
     var count by mutableStateOf(0)
     var time by mutableStateOf("")
     var locked by mutableStateOf(false)
 
-    //TODO use actual queue?
     val items = mutableStateListOf<PlaylistItem>()
 
     fun setPlaylist(newItems: List<PlaylistItem>) {

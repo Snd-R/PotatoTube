@@ -1,10 +1,13 @@
-package platform
+package ui.platform
 
 import androidx.compose.runtime.Composable
 
 @Composable
-expect fun Tooltip(
+actual fun Tooltip(
     tooltip: @Composable () -> Unit,
     delayMillis: Int,
     content: @Composable () -> Unit
-)
+) {
+    // No Tooltip for Android
+    content()
+}

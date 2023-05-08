@@ -1,13 +1,13 @@
 package image
 
 import androidx.compose.runtime.Composable
-import ui.chat.Chat
+import ui.chat.ChatState
 
 interface ImageLoader {
     @Composable
     fun LoadEmoteImage(
-        emote: Chat.Emote,
-        dimension: Chat.EmoteDimension,
+        emote: ChatState.Emote,
+        dimension: ChatState.EmoteDimension,
         scaleTo: Dimension?,
     )
 }

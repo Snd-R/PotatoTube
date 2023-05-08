@@ -8,10 +8,10 @@ import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import player.PlayerDiscovery
-import ui.Channel
+import ui.channel.ChannelState
 import ui.createModel
 
-fun createState(): Channel {
+fun createState(): ChannelState {
     PlayerDiscovery.discover()
 
     val httpClient = OkHttpClient.Builder()
@@ -25,7 +25,7 @@ fun createState(): Channel {
 
 @Composable
 fun MainView(
-    state: Channel,
+    state: ChannelState,
     windowHeight: Dp,
     windowWidth: Dp,
 ) {

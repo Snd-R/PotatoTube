@@ -2,12 +2,12 @@ package ui.videoplayer
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import ui.settings.SettingsModel
+import ui.settings.SettingsState
 import java.time.Duration
 import kotlin.math.absoluteValue
 
 class VideoPlayerState(
-    private val settingsModel: SettingsModel
+    private val settingsModel: SettingsState
 ) {
 
     var timeState = TimeState()

@@ -29,8 +29,8 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.jsoup.parser.Parser
-import ui.chat.Chat.Message.*
-import ui.chat.Chat.Message.ConnectionMessage.ConnectionType.DISCONNECTED
+import ui.chat.ChatState.Message.*
+import ui.chat.ChatState.Message.ConnectionMessage.ConnectionType.DISCONNECTED
 import ui.common.AppTheme
 import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter
@@ -41,8 +41,8 @@ fun ChatMessage(
     emoteSize: TextUnit,
     height: Dp,
     index: Int,
-    message: Chat.Message,
-    model: Chat,
+    message: ChatState.Message,
+    model: ChatState,
 ) {
     when (message) {
         is UserMessage -> UserMessageView(
@@ -54,7 +54,7 @@ fun ChatMessage(
             model,
         )
 
-        is Chat.Message.ConnectionMessage -> ConnectionMessage(fontSize, height, message)
+        is ConnectionMessage -> ConnectionMessage(fontSize, height, message)
         is AnnouncementMessage -> AnnouncementMessageView((fontSize.value + 5f).sp, message)
         is SystemMessage -> SystemMessageView(((fontSize.value - 1f).coerceAtLeast(3f)).sp, message)
     }
@@ -67,7 +67,7 @@ fun UserMessageView(
     height: Dp,
     index: Int,
     message: UserMessage,
-    model: Chat,
+    model: ChatState,
 ) {
     val channelEmotesState by model.channelEmotes.collectAsState()
     val parsedMessage = remember(model.settings.isTimestampsEnabled, model.settings.timestampFormat) {
@@ -146,7 +146,7 @@ fun SystemMessageView(
 fun ConnectionMessage(
     fontSize: TextUnit,
     height: Dp,
-    message: Chat.Message.ConnectionMessage,
+    message: ConnectionMessage,
 ) {
     Box(
         modifier = Modifier
@@ -170,7 +170,7 @@ fun ConnectionMessage(
 fun parseMessage(
     message: UserMessage,
     timestampFormat: String?,
-    channelEmotes: Map<String, Chat.Emote>,
+    channelEmotes: Map<String, ChatState.Emote>,
     currentUser: String?
 ): ParsedMessage {
     val messageDocument = Jsoup.parse(message.message, Parser.xmlParser())
@@ -180,8 +180,8 @@ fun parseMessage(
             .format(message.timestamp)
     }
 
-    val customEmotes = mutableSetOf<Chat.Emote>()
-    val emotes = mutableSetOf<Chat.Emote>()
+    val customEmotes = mutableSetOf<ChatState.Emote>()
+    val emotes = mutableSetOf<ChatState.Emote>()
     var isMentioned = false
 
     val annotatedString = buildAnnotatedString {
@@ -209,7 +209,7 @@ fun parseMessage(
                     "img" -> {
                         val url = node.attr("src")
                         appendInlineContent(id = url, alternateText = url)
-                        customEmotes.add(Chat.Emote(name = url, url = url))
+                        customEmotes.add(ChatState.Emote(name = url, url = url))
                     }
 
                     else -> processAndAppendMessage(node.text(), channelEmotes, currentUser)
@@ -236,9 +236,9 @@ fun parseMessage(
 }
 
 fun emoteInlineContent(
-    emotes: Collection<Chat.Emote>,
+    emotes: Collection<ChatState.Emote>,
     emoteSize: TextUnit,
-    model: Chat
+    model: ChatState
 ): Map<String, InlineTextContent> = emotes.associate { emote ->
     emote.name to InlineTextContent(
         Placeholder(
@@ -261,11 +261,11 @@ fun emoteInlineContent(
 
 fun AnnotatedString.Builder.processAndAppendMessage(
     text: String,
-    channelEmotes: Map<String, Chat.Emote>,
+    channelEmotes: Map<String, ChatState.Emote>,
     currentUser: String?
 ): TextMessageResult {
     var isMentioned = false
-    val emotes = mutableSetOf<Chat.Emote>()
+    val emotes = mutableSetOf<ChatState.Emote>()
 
     text.split(" ").forEach { token ->
         val emote = channelEmotes[token]
@@ -286,11 +286,11 @@ fun AnnotatedString.Builder.processAndAppendMessage(
 data class ParsedMessage(
     val annotatedString: AnnotatedString,
     val isMentioned: Boolean,
-    val emotes: Collection<Chat.Emote>,
-    val customEmotes: Collection<Chat.Emote>
+    val emotes: Collection<ChatState.Emote>,
+    val customEmotes: Collection<ChatState.Emote>
 )
 
 data class TextMessageResult(
     val isMentioned: Boolean,
-    val emotes: Collection<Chat.Emote>,
+    val emotes: Collection<ChatState.Emote>,
 )

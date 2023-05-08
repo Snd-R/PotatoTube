@@ -14,8 +14,8 @@ import org.apache.commons.text.StringEscapeUtils.unescapeHtml4
 import org.jetbrains.compose.resources.LoadState
 import org.json.JSONArray
 import org.json.JSONObject
-import ui.chat.Chat
-import ui.chat.Chat.Message.UserMessage
+import ui.chat.ChatState
+import ui.chat.ChatState.Message.UserMessage
 import ui.playlist.MediaItem
 import ui.playlist.PlaylistItem
 import ui.poll.Poll
@@ -220,24 +220,24 @@ class CytubeClient(
 
         socket.on("emoteList") {
             val response: JSONArray = it[0] as JSONArray
-            val emotes = mutableListOf<Chat.Emote>()
+            val emotes = mutableListOf<ChatState.Emote>()
             for (i in 0 until response.length()) {
                 val emote = response.getJSONObject(i)
                 val name = emote.getString("name")
                 val image = emote.getString("image")
-                emotes.add(Chat.Emote(name, image))
+                emotes.add(ChatState.Emote(name, image))
             }
             eventHandler.onEmoteList(emotes)
         }
 
         socket.on("userlist") {
             val response: JSONArray = it[0] as JSONArray
-            val users = mutableListOf<Chat.User>()
+            val users = mutableListOf<ChatState.User>()
             for (i in 0 until response.length()) {
                 val user = response.getJSONObject(i)
                 val meta = user.getJSONObject("meta")
                 users.add(
-                    Chat.User(
+                    ChatState.User(
                         name = user.getString("name"),
                         rank = user.getDouble("rank"),
                         afk = meta.getBoolean("afk"),
@@ -263,7 +263,7 @@ class CytubeClient(
         socket.on("addUser") {
             val response = it[0] as JSONObject
             val meta = response.getJSONObject("meta")
-            val user = Chat.User(
+            val user = ChatState.User(
                 name = response.getString("name"),
                 rank = response.getDouble("rank"),
                 afk = meta.getBoolean("afk"),

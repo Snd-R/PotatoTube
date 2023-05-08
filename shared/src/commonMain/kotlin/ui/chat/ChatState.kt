@@ -7,14 +7,14 @@ import cytube.CytubeClient
 import image.ImageLoader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import ui.ConnectionStatus
+import ui.channel.ConnectionStatus
 import ui.poll.PollState
-import ui.settings.SettingsModel
+import ui.settings.SettingsState
 import java.time.Instant
 
-class Chat(
+class ChatState(
     private val cytube: CytubeClient,
-    val settings: SettingsModel,
+    val settings: SettingsState,
     val connectionStatus: ConnectionStatus,
     val imageLoader: ImageLoader,
     val poll: PollState,
@@ -25,7 +25,7 @@ class Chat(
     val customEmotes = MutableStateFlow(emptyMap<String, Emote>())
 
     var users = Users()
-    val messageInput = MessageInput()
+    val messageInput = MessageInputState()
 
     var scrolledUp = MutableStateFlow(false)
     var showUserList by mutableStateOf(false)

@@ -1,15 +1,12 @@
-package ui
+package ui.channel
 
 import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Text
@@ -28,8 +25,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import platform.SplitterState
-import platform.VerticalSplittable
 import ui.chat.ChatView
 import ui.common.*
 import ui.common.OverlayDialogValue.Hidden
@@ -39,13 +34,12 @@ import ui.settings.SettingsView
 import ui.videoplayer.VideoPlayerView
 
 @Composable
-fun CytubeMainView(model: Channel) {
+fun CytubeMainView(model: ChannelState) {
     val settingsOverlayState = remember { OverlayDialogState(Hidden) }
     OverlayDialog(
         overlayState = settingsOverlayState,
         overlayContent = { SettingsView(model.settings) }
     ) {
-
         when (LocalOrientation.current) {
             Orientation.LANDSCAPE -> HorizontalView(model)
             Orientation.PORTRAIT -> VerticalView(model)
@@ -60,21 +54,20 @@ fun CytubeMainView(model: Channel) {
 }
 
 @Composable
-private fun VerticalView(model: Channel) {
-
+private fun VerticalView(model: ChannelState) {
     Column {
         Box(modifier = Modifier.aspectRatio(1.735f)) {
             VideoPanel(model)
         }
         Box(modifier = Modifier.fillMaxSize()) {
-            ChatView(model.chat, model.settings)
+            ChatView(model.chat)
         }
     }
 }
 
 
 @Composable
-private fun HorizontalView(model: Channel) {
+private fun HorizontalView(model: ChannelState) {
     val focusManager = LocalFocusManager.current
     val windowSize = LocalWindowSize.current
     val panelState = remember { PanelState() }
@@ -98,7 +91,7 @@ private fun HorizontalView(model: Channel) {
         }
     ) {
         ResizablePanel(Modifier.width(animatedSize).fillMaxHeight(), panelState) {
-            ChatView(model.chat, model.settings)
+            ChatView(model.chat)
         }
 
         VideoPanel(model)
@@ -136,60 +129,17 @@ private fun ResizablePanel(
 }
 
 @Composable
-private fun VideoPanel(model: Channel) {
-
+private fun VideoPanel(model: ChannelState) {
     val scrollState = rememberScrollState()
-    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier.verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        val playerHeight = if (model.settings.isActiveScreen) Modifier.size(0.dp)
-        else when (LocalOrientation.current) {
-            Orientation.LANDSCAPE -> Modifier.heightIn(min = 0.dp, max = LocalWindowHeight.current)
-            Orientation.PORTRAIT -> Modifier
-        }
-
-        Box {
-            model.settings.playerType?.let { player ->
-                VideoPlayerView(
-                    model.player,
-                    player,
-                    playerHeight,
-                    scrollState,
-                )
-            } ?: run {
-                Box(
-                    modifier = Modifier.background(Color.Black).then(playerHeight).aspectRatio(1.735f),
-                    contentAlignment = Alignment.Center
-
-                ) {
-                    Text("Player Unavailable")
-                }
-
-            }
-
-            val maxScroll = with(LocalDensity.current) { scrollState.maxValue.toDp() }
-            if (maxScroll > 50.dp && scrollState.canScrollForward) {
-                TextButton(
-                    modifier =
-                    if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)
-                    else Modifier.align(Alignment.BottomCenter),
-                    onClick = {
-                        coroutineScope.launch {
-                            scrollState.animateScrollTo(scrollState.maxValue)
-                        }
-                    }) {
-                    Text("Scroll down")
-                }
-            }
-        }
+        VideoPlayer(model, scrollState)
         Spacer(Modifier.size(5.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             Spacer(Modifier.weight(1.0f))
+
             if (model.poll.currentPoll) {
                 Box(
                     modifier = Modifier
@@ -199,6 +149,7 @@ private fun VideoPanel(model: Channel) {
                     PollMainView(model.poll)
                 }
             }
+
             Box(
                 modifier = Modifier
                     .heightIn(max = 400.dp)
@@ -206,6 +157,50 @@ private fun VideoPanel(model: Channel) {
                     .fillMaxWidth()
             ) {
                 PlaylistView(model.playlist)
+            }
+        }
+    }
+}
+
+@Composable
+private fun VideoPlayer(model: ChannelState, scrollState: ScrollState) {
+    val coroutineScope = rememberCoroutineScope()
+    val playerHeight = if (model.settings.isActiveScreen) Modifier.size(0.dp)
+    else when (LocalOrientation.current) {
+        Orientation.LANDSCAPE -> Modifier.heightIn(min = 0.dp, max = LocalWindowHeight.current)
+        Orientation.PORTRAIT -> Modifier
+    }
+
+    Box {
+        model.settings.playerType?.let { player ->
+            VideoPlayerView(
+                model.player,
+                player,
+                playerHeight,
+                scrollState,
+            )
+        } ?: run {
+            Box(
+                modifier = Modifier.background(Color.Black)
+                    .then(playerHeight)
+                    .aspectRatio(1.735f),
+                contentAlignment = Alignment.Center
+            ) { Text("Player Unavailable") }
+
+        }
+
+        val maxScroll = with(LocalDensity.current) { scrollState.maxValue.toDp() }
+        if (maxScroll > 50.dp && scrollState.canScrollForward) {
+            TextButton(
+                modifier =
+                if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)
+                else Modifier.align(Alignment.BottomCenter),
+                onClick = {
+                    coroutineScope.launch {
+                        scrollState.animateScrollTo(scrollState.maxValue)
+                    }
+                }) {
+                Text("Scroll down")
             }
         }
     }

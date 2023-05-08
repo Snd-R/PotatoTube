@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @Composable
-fun AccountSettings(model: SettingsModel) {
+fun AccountSettings(model: SettingsState) {
     val coroutineScope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         val currentUser = model.username ?: model.connectionStatus.currentUser
@@ -48,7 +48,7 @@ fun AccountSettings(model: SettingsModel) {
 }
 
 @Composable
-fun Login(model: SettingsModel) {
+fun Login(model: SettingsState) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()

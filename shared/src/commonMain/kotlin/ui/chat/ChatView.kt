@@ -23,20 +23,20 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import platform.VerticalScrollbar
 import ui.common.AppTheme
+import ui.platform.VerticalScrollbar
 import ui.poll.PollChatView
-import ui.settings.SettingsModel
+import ui.settings.SettingsState
 
 @Composable
-fun ChatView(model: Chat, settings: SettingsModel) = Surface(
+fun ChatView(model: ChatState) = Surface(
     modifier = Modifier.fillMaxSize()
 ) {
     ChatPanel(model)
 }
 
 @Composable
-private fun ChatPanel(model: Chat) {
+private fun ChatPanel(model: ChatState) {
     Column {
         ChannelBar(model)
         Divider()
@@ -102,7 +102,7 @@ private fun ChatPanel(model: Chat) {
 }
 
 @Composable
-private fun MessageBox(model: Chat, settings: SettingsModel) {
+private fun MessageBox(model: ChatState, settings: SettingsState) {
     with(LocalDensity.current) {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -165,7 +165,7 @@ private fun MessageBox(model: Chat, settings: SettingsModel) {
 }
 
 @Composable
-fun UserList(model: Chat) {
+fun UserList(model: ChatState) {
     Box(
         modifier = Modifier
             .widthIn(min = 100.dp, max = 100.dp)
@@ -187,15 +187,15 @@ fun UserList(model: Chat) {
 }
 
 @Composable
-fun ActiveUser(user: Chat.User) {
+fun ActiveUser(user: ChatState.User) {
     val userRankState by user.rank.collectAsState()
     val userAfkState by user.afk.collectAsState()
     val (color, weight) = when (userRankState) {
-        Chat.UserRank.GUEST -> AppTheme.colors.guest to FontWeight.Normal
-        Chat.UserRank.REGULAR_USER -> AppTheme.colors.regularUser to FontWeight.Normal
-        Chat.UserRank.MODERATOR -> AppTheme.colors.moderator to FontWeight.Normal
-        Chat.UserRank.CHANNEL_ADMIN -> AppTheme.colors.channelAdmin to FontWeight.Bold
-        Chat.UserRank.SITE_ADMIN -> AppTheme.colors.siteAdmin to FontWeight.Bold
+        ChatState.UserRank.GUEST -> AppTheme.colors.guest to FontWeight.Normal
+        ChatState.UserRank.REGULAR_USER -> AppTheme.colors.regularUser to FontWeight.Normal
+        ChatState.UserRank.MODERATOR -> AppTheme.colors.moderator to FontWeight.Normal
+        ChatState.UserRank.CHANNEL_ADMIN -> AppTheme.colors.channelAdmin to FontWeight.Bold
+        ChatState.UserRank.SITE_ADMIN -> AppTheme.colors.siteAdmin to FontWeight.Bold
     }
     Row {
         if (userAfkState) {

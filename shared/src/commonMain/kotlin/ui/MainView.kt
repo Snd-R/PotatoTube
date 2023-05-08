@@ -10,11 +10,14 @@ import image.ImageLoader
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import settings.getSettingsRepository
+import ui.channel.ChannelState
+import ui.channel.ConnectionStatus
+import ui.channel.CytubeMainView
 import ui.common.CustomTheme
-import ui.settings.SettingsModel
+import ui.settings.SettingsState
 
 @Composable
-fun MainView(model: Channel, windowHeight: Dp, windowWidth: Dp) {
+fun MainView(model: ChannelState, windowHeight: Dp, windowWidth: Dp) {
     CustomTheme(windowHeight, windowWidth) {
         Surface {
             CytubeMainView(model)
@@ -22,7 +25,7 @@ fun MainView(model: Channel, windowHeight: Dp, windowWidth: Dp) {
     }
 }
 
-fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): Channel {
+fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): ChannelState {
     val moshi = Moshi.Builder().build()
     val cytubeClient = CytubeClient(httpClient, moshi)
     val settingsRepository = getSettingsRepository()
@@ -30,7 +33,7 @@ fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): Channel {
 
     val settings = runBlocking {
         val config = settingsRepository.loadSettings()
-        SettingsModel(
+        SettingsState(
             connectionStatus,
             settingsRepository,
             cytubeClient
@@ -45,7 +48,7 @@ fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): Channel {
         }
     }
 
-    return Channel(
+    return ChannelState(
         connectionStatus = connectionStatus,
         settings = settings,
         cytube = cytubeClient,

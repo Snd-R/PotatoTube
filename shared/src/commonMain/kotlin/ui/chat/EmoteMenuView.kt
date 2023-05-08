@@ -23,7 +23,7 @@ import ui.common.LocalWindowSize
 import ui.common.WindowSize
 
 @Composable
-fun EmoteMenuView(chat: Chat) {
+fun EmoteMenuView(chat: ChatState) {
     val channelEmotesState by chat.channelEmotes.collectAsState()
     val allEmotes by remember { derivedStateOf { channelEmotesState.values.toList().sortedBy { it.name.lowercase() } } }
     Column {
@@ -56,7 +56,7 @@ fun EmoteMenuView(chat: Chat) {
 }
 
 @Composable
-fun Emote(emote: Chat.Emote, chat: Chat) {
+fun Emote(emote: ChatState.Emote, chat: ChatState) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier

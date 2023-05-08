@@ -11,7 +11,7 @@ import org.jetbrains.compose.resources.LoadState
 
 
 @Composable
-fun ChannelSettings(settings: SettingsModel) {
+fun ChannelSettings(settings: SettingsState) {
     val coroutineScope = rememberCoroutineScope()
     var text by remember { mutableStateOf("") }
     var channelLoadState by remember { mutableStateOf<LoadState<Unit>?>(null) }

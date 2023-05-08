@@ -20,11 +20,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
-import ui.chat.Chat
+import ui.chat.ChatState
 
 class AndroidImageLoader : ImageLoader {
     @Composable
-    override fun LoadEmoteImage(emote: Chat.Emote, dimension: Chat.EmoteDimension, scaleTo: Dimension?) {
+    override fun LoadEmoteImage(emote: ChatState.Emote, dimension: ChatState.EmoteDimension, scaleTo: Dimension?) {
         Box {
             val painter = rememberAsyncImagePainter(emote.url)
             Image(

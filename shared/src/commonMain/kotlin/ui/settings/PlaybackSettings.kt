@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PlaybackSettings(model: SettingsModel) {
+fun PlaybackSettings(model: SettingsState) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Playback Settings")
         Divider()
@@ -19,7 +19,7 @@ fun PlaybackSettings(model: SettingsModel) {
 }
 
 @Composable
-fun SyncThresholdSettings(model: SettingsModel) {
+fun SyncThresholdSettings(model: SettingsState) {
     var threshold by remember { mutableStateOf((model.syncThreshold / 1000).toString()) }
     TextField(
         value = threshold,
@@ -35,4 +35,4 @@ fun SyncThresholdSettings(model: SettingsModel) {
 }
 
 @Composable
-expect fun PlayerTypeSettings(model: SettingsModel)
+expect fun PlayerTypeSettings(model: SettingsState)

@@ -1,4 +1,4 @@
-package ui
+package ui.channel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,29 +7,29 @@ import cytube.CytubeClient
 import cytube.CytubeEventHandler
 import image.ImageLoader
 import mu.KotlinLogging
-import ui.chat.Chat
-import ui.chat.Chat.Message.AnnouncementMessage
-import ui.chat.Chat.Message.ConnectionMessage
-import ui.chat.Chat.Message.ConnectionMessage.ConnectionType.CONNECTED
-import ui.chat.Chat.Message.ConnectionMessage.ConnectionType.DISCONNECTED
-import ui.playlist.Playlist
+import ui.chat.ChatState
+import ui.chat.ChatState.Message.AnnouncementMessage
+import ui.chat.ChatState.Message.ConnectionMessage
+import ui.chat.ChatState.Message.ConnectionMessage.ConnectionType.CONNECTED
+import ui.chat.ChatState.Message.ConnectionMessage.ConnectionType.DISCONNECTED
+import ui.playlist.PlaylistState
 import ui.poll.Poll
 import ui.poll.PollState
-import ui.settings.SettingsModel
+import ui.settings.SettingsState
 import ui.videoplayer.VideoPlayerState
 
 private val logger = KotlinLogging.logger {}
 
-class Channel(
+class ChannelState(
     val connectionStatus: ConnectionStatus,
-    val settings: SettingsModel,
+    val settings: SettingsState,
     val cytube: CytubeClient,
     imageLoader: ImageLoader,
 ) {
     val poll = PollState(cytube)
     val player = VideoPlayerState(settings)
-    val playlist = Playlist(cytube)
-    val chat: Chat = Chat(cytube, settings, connectionStatus, imageLoader, poll)
+    val playlist = PlaylistState(cytube)
+    val chat: ChatState = ChatState(cytube, settings, connectionStatus, imageLoader, poll)
 
     private var isInitialized by mutableStateOf(false)
 

@@ -19,7 +19,7 @@ import org.jetbrains.compose.resources.LoadState
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun MessageInputView(chat: Chat) {
+fun MessageInputView(chat: ChatState) {
     val model = chat.messageInput
     val coroutineScope = rememberCoroutineScope()
     val label =
@@ -94,11 +94,6 @@ fun MessageInputView(chat: Chat) {
                             model.tabCompletion(chat.completionOptions())
                             true
                         }
-
-                        // TODO implement workaround for ctrl + backspace on empty textfield https://github.com/JetBrains/compose-jb/issues/565 - still not fixed
-//                    it.isCtrlPressed && it.key == Key.Backspace && it.type == KeyEventType.KeyDown -> {
-//                        true
-//                    }
 
                         else -> false
                     }

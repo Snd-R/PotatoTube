@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun ChatSettings(settings: SettingsModel) {
+fun ChatSettings(settings: SettingsState) {
     Column {
         Text("Chat settings")
         Spacer(Modifier.size(5.dp))

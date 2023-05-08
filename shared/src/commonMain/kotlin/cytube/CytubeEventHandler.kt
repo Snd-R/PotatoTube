@@ -3,17 +3,17 @@ package cytube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import ui.Channel
-import ui.chat.Chat
+import ui.channel.ChannelState
+import ui.chat.ChatState
 import ui.playlist.PlaylistItem
 import ui.poll.Poll
 
 class CytubeEventHandler(
-    private val channel: Channel,
+    private val channel: ChannelState,
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    fun onChatMessage(message: Chat.Message.UserMessage) {
+    fun onChatMessage(message: ChatState.Message.UserMessage) {
         channel.chat.addUserMessage(message)
     }
 
@@ -22,11 +22,11 @@ class CytubeEventHandler(
         channel.connectionStatus.isGuest = isGuest
     }
 
-    fun onEmoteList(emotes: List<Chat.Emote>) {
+    fun onEmoteList(emotes: List<ChatState.Emote>) {
         channel.chat.setEmotes(emotes)
     }
 
-    fun onUserList(users: List<Chat.User>) {
+    fun onUserList(users: List<ChatState.User>) {
         channel.chat.users.setUsers(users)
     }
 
@@ -38,7 +38,7 @@ class CytubeEventHandler(
         channel.chat.users.setAfk(username, afk)
     }
 
-    fun onAddUser(user: Chat.User) {
+    fun onAddUser(user: ChatState.User) {
         channel.chat.users.addUser(user)
     }
 
@@ -116,11 +116,11 @@ class CytubeEventHandler(
     }
 
     fun onUpdateEmote(name: String, image: String) {
-        channel.chat.updateEmote(Chat.Emote(name = name, url = image))
+        channel.chat.updateEmote(ChatState.Emote(name = name, url = image))
     }
 
     fun onRemoveEmote(name: String, image: String) {
-        channel.chat.removeEmote(Chat.Emote(name = name, url = image))
+        channel.chat.removeEmote(ChatState.Emote(name = name, url = image))
     }
 
     fun updatePoll(poll: Poll) {

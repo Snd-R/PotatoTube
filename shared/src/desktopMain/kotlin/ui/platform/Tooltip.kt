@@ -1,4 +1,4 @@
-package platform
+package ui.platform
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.TooltipArea

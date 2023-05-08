@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.LoadState
-import platform.Tooltip
 import ui.common.AppTheme
+import ui.platform.Tooltip
 
 @Composable
-fun PlaylistView(model: Playlist) {
+fun PlaylistView(model: PlaylistState) {
     Box(modifier = Modifier.fillMaxWidth()) {
         val scrollState = rememberLazyListState()
         Column {
@@ -81,7 +81,7 @@ fun PlaylistItem(item: PlaylistItem, active: Boolean) {
 }
 
 @Composable
-fun PlaylistHeader(model: Playlist) {
+fun PlaylistHeader(model: PlaylistState) {
     Box(
         modifier = Modifier
             .border(width = 1.dp, color = Color.LightGray)
@@ -94,7 +94,7 @@ fun PlaylistHeader(model: Playlist) {
 }
 
 @Composable
-fun AddToQueueButton(model: Playlist) {
+fun AddToQueueButton(model: PlaylistState) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 3.dp)
@@ -150,7 +150,6 @@ fun AddToQueueButton(model: Playlist) {
             )
 
             is LoadState.Loading -> CircularProgressIndicator()
-
             is LoadState.Success -> queueAddState = null
         }
     }

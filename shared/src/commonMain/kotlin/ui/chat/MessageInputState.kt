@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 
-class MessageInput {
+class MessageInputState {
     var message by mutableStateOf(TextFieldValue(""))
     var sentMessages = mutableStateListOf<String>()
 

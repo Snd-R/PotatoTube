@@ -10,10 +10,10 @@ import image.AndroidImageLoader
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import ui.Channel
+import ui.channel.ChannelState
 import ui.createModel
 
-fun createState(): Channel {
+fun createState(): ChannelState {
     val httpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor { message -> KotlinLogging.logger { }.info { message } }
             .setLevel(HttpLoggingInterceptor.Level.BASIC))
@@ -25,7 +25,7 @@ fun createState(): Channel {
 
 @Composable
 fun MainView(
-    state: Channel,
+    state: ChannelState,
     windowHeight: Dp,
     windowWidth: Dp
 ) {
