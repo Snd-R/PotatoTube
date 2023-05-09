@@ -251,7 +251,7 @@ fun emoteInlineContent(
             emote = emote,
             emoteDimensions = emote.messageDimensions,
             maxHeight = emoteSize.value.toInt(),
-            maxWidth = null
+            maxWidth = emoteSize.value.toInt()
         )
     }
 }
