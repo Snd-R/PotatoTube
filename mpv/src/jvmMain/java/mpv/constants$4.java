@@ -7,34 +7,6 @@ import java.lang.invoke.MethodHandle;
 
 class constants$4 {
 
-    static final FunctionDescriptor mpv_set_property_string$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_set_property_string$MH = RuntimeHelper.downcallHandle(
-        "mpv_set_property_string",
-        constants$4.mpv_set_property_string$FUNC
-    );
-    static final FunctionDescriptor mpv_del_property$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_del_property$MH = RuntimeHelper.downcallHandle(
-        "mpv_del_property",
-        constants$4.mpv_del_property$FUNC
-    );
-    static final FunctionDescriptor mpv_set_property_async$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_set_property_async$MH = RuntimeHelper.downcallHandle(
-        "mpv_set_property_async",
-        constants$4.mpv_set_property_async$FUNC
-    );
     static final FunctionDescriptor mpv_get_property$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
@@ -44,22 +16,6 @@ class constants$4 {
     static final MethodHandle mpv_get_property$MH = RuntimeHelper.downcallHandle(
         "mpv_get_property",
         constants$4.mpv_get_property$FUNC
-    );
-    static final FunctionDescriptor mpv_get_property_string$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_get_property_string$MH = RuntimeHelper.downcallHandle(
-        "mpv_get_property_string",
-        constants$4.mpv_get_property_string$FUNC
-    );
-    static final FunctionDescriptor mpv_get_property_osd_string$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_get_property_osd_string$MH = RuntimeHelper.downcallHandle(
-        "mpv_get_property_osd_string",
-        constants$4.mpv_get_property_osd_string$FUNC
     );
 }
 

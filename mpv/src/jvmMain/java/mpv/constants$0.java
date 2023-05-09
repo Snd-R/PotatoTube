@@ -7,39 +7,6 @@ import java.lang.invoke.MethodHandle;
 
 class constants$0 {
 
-    static final FunctionDescriptor mpv_client_api_version$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT);
-    static final MethodHandle mpv_client_api_version$MH = RuntimeHelper.downcallHandle(
-        "mpv_client_api_version",
-        constants$0.mpv_client_api_version$FUNC
-    );
-    static final FunctionDescriptor mpv_error_string$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_INT$LAYOUT
-    );
-    static final MethodHandle mpv_error_string$MH = RuntimeHelper.downcallHandle(
-        "mpv_error_string",
-        constants$0.mpv_error_string$FUNC
-    );
-    static final FunctionDescriptor mpv_free$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_free$MH = RuntimeHelper.downcallHandle(
-        "mpv_free",
-        constants$0.mpv_free$FUNC
-    );
-    static final FunctionDescriptor mpv_client_name$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_client_name$MH = RuntimeHelper.downcallHandle(
-        "mpv_client_name",
-        constants$0.mpv_client_name$FUNC
-    );
-    static final FunctionDescriptor mpv_client_id$FUNC = FunctionDescriptor.of(Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_client_id$MH = RuntimeHelper.downcallHandle(
-        "mpv_client_id",
-        constants$0.mpv_client_id$FUNC
-    );
     static final FunctionDescriptor mpv_create$FUNC = FunctionDescriptor.of(Constants$root.C_POINTER$LAYOUT);
     static final MethodHandle mpv_create$MH = RuntimeHelper.downcallHandle(
         "mpv_create",

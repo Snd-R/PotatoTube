@@ -152,10 +152,11 @@ private fun MessageBox(model: ChatState, settings: SettingsState) {
                     PollChatView(model.poll)
                 }
             }
-            if (!scrollState.canScrollForward)
-                model.setScrollState(false)
+//            if (!scrollState.canScrollForward)
+//                model.setScrollState(false)
 
             LaunchedEffect(messagesState.size, viewportSize, scrolledUp, scrollState.canScrollForward) {
+                if (!scrollState.canScrollForward) model.setScrollState(false)
                 if (messagesState.isNotEmpty() && !scrolledUp && !scrollState.isScrollInProgress) {
                     scrollState.animateScrollToItem(messagesState.size - 1)
                 }

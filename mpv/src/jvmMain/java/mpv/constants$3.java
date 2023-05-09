@@ -7,23 +7,6 @@ import java.lang.invoke.MethodHandle;
 
 class constants$3 {
 
-    static final FunctionDescriptor mpv_command_ret$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_command_ret$MH = RuntimeHelper.downcallHandle(
-        "mpv_command_ret",
-        constants$3.mpv_command_ret$FUNC
-    );
-    static final FunctionDescriptor mpv_command_string$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_command_string$MH = RuntimeHelper.downcallHandle(
-        "mpv_command_string",
-        constants$3.mpv_command_string$FUNC
-    );
     static final FunctionDescriptor mpv_command_async$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,
         Constants$root.C_LONG_LONG$LAYOUT,
@@ -32,23 +15,6 @@ class constants$3 {
     static final MethodHandle mpv_command_async$MH = RuntimeHelper.downcallHandle(
         "mpv_command_async",
         constants$3.mpv_command_async$FUNC
-    );
-    static final FunctionDescriptor mpv_command_node_async$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_command_node_async$MH = RuntimeHelper.downcallHandle(
-        "mpv_command_node_async",
-        constants$3.mpv_command_node_async$FUNC
-    );
-    static final FunctionDescriptor mpv_abort_async_command$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_LONG_LONG$LAYOUT
-    );
-    static final MethodHandle mpv_abort_async_command$MH = RuntimeHelper.downcallHandle(
-        "mpv_abort_async_command",
-        constants$3.mpv_abort_async_command$FUNC
     );
     static final FunctionDescriptor mpv_set_property$FUNC = FunctionDescriptor.of(Constants$root.C_INT$LAYOUT,
         Constants$root.C_POINTER$LAYOUT,

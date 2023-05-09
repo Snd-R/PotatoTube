@@ -23,28 +23,6 @@ class constants$6 {
         "mpv_wait_event",
         constants$6.mpv_wait_event$FUNC
     );
-    static final FunctionDescriptor mpv_wakeup$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_wakeup$MH = RuntimeHelper.downcallHandle(
-        "mpv_wakeup",
-        constants$6.mpv_wakeup$FUNC
-    );
-    static final FunctionDescriptor mpv_set_wakeup_callback$cb$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_set_wakeup_callback$cb$MH = RuntimeHelper.downcallHandle(
-        constants$6.mpv_set_wakeup_callback$cb$FUNC
-    );
-    static final FunctionDescriptor mpv_set_wakeup_callback$FUNC = FunctionDescriptor.ofVoid(
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT,
-        Constants$root.C_POINTER$LAYOUT
-    );
-    static final MethodHandle mpv_set_wakeup_callback$MH = RuntimeHelper.downcallHandle(
-        "mpv_set_wakeup_callback",
-        constants$6.mpv_set_wakeup_callback$FUNC
-    );
 }
 
 

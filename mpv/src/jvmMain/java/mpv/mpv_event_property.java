@@ -18,58 +18,23 @@ public class mpv_event_property {
         return mpv_event_property.$struct$LAYOUT;
     }
     static final VarHandle name$VH = $struct$LAYOUT.varHandle(PathElement.groupElement("name"));
-    public static VarHandle name$VH() {
-        return mpv_event_property.name$VH;
-    }
+
     public static MemoryAddress name$get(MemorySegment seg) {
         return (MemoryAddress)mpv_event_property.name$VH.get(seg);
     }
-    public static void name$set( MemorySegment seg, MemoryAddress x) {
-        mpv_event_property.name$VH.set(seg, x);
-    }
-    public static MemoryAddress name$get(MemorySegment seg, long index) {
-        return (MemoryAddress)mpv_event_property.name$VH.get(seg.asSlice(index*sizeof()));
-    }
-    public static void name$set(MemorySegment seg, long index, MemoryAddress x) {
-        mpv_event_property.name$VH.set(seg.asSlice(index*sizeof()), x);
-    }
+
     static final VarHandle format$VH = $struct$LAYOUT.varHandle(PathElement.groupElement("format"));
-    public static VarHandle format$VH() {
-        return mpv_event_property.format$VH;
-    }
+
     public static int format$get(MemorySegment seg) {
         return (int)mpv_event_property.format$VH.get(seg);
     }
-    public static void format$set( MemorySegment seg, int x) {
-        mpv_event_property.format$VH.set(seg, x);
-    }
-    public static int format$get(MemorySegment seg, long index) {
-        return (int)mpv_event_property.format$VH.get(seg.asSlice(index*sizeof()));
-    }
-    public static void format$set(MemorySegment seg, long index, int x) {
-        mpv_event_property.format$VH.set(seg.asSlice(index*sizeof()), x);
-    }
+
     static final VarHandle data$VH = $struct$LAYOUT.varHandle(PathElement.groupElement("data"));
-    public static VarHandle data$VH() {
-        return mpv_event_property.data$VH;
-    }
+
     public static MemoryAddress data$get(MemorySegment seg) {
         return (MemoryAddress)mpv_event_property.data$VH.get(seg);
     }
-    public static void data$set( MemorySegment seg, MemoryAddress x) {
-        mpv_event_property.data$VH.set(seg, x);
-    }
-    public static MemoryAddress data$get(MemorySegment seg, long index) {
-        return (MemoryAddress)mpv_event_property.data$VH.get(seg.asSlice(index*sizeof()));
-    }
-    public static void data$set(MemorySegment seg, long index, MemoryAddress x) {
-        mpv_event_property.data$VH.set(seg.asSlice(index*sizeof()), x);
-    }
-    public static long sizeof() { return $LAYOUT().byteSize(); }
-    public static MemorySegment allocate(SegmentAllocator allocator) { return allocator.allocate($LAYOUT()); }
-    public static MemorySegment allocateArray(int len, SegmentAllocator allocator) {
-        return allocator.allocate(MemoryLayout.sequenceLayout(len, $LAYOUT()));
-    }
+
     public static MemorySegment ofAddress(MemoryAddress addr, MemorySession session) { return RuntimeHelper.asArray(addr, $LAYOUT(), 1, session); }
 }
 
