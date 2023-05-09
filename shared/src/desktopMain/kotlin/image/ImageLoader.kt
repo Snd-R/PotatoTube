@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
@@ -44,53 +43,49 @@ class DesktopImageLoader(
     @Composable
     override fun LoadEmoteImage(
         emote: ChatState.Emote,
-        dimension: ChatState.EmoteDimension,
-        scaleTo: Dimension?
+        emoteDimensions: ChatState.EmoteDimensions,
+        maxHeight: Int?,
+        maxWidth: Int?,
     ) {
-        val state: MutableState<LoadState<AnimatedImage>> = remember { mutableStateOf(LoadState.Loading()) }
-        LaunchedEffect(emote.url) {
-            withContext(Dispatchers.IO) {
-                launch {
-                    try {
-                        when (val image = imageLoader.getImage(emote.url)) {
-                            is Result.Error -> {
-                                state.value = LoadState.Error(image.exception)
-//                                dimension.height = 60
-//                                dimension.width = 60
-                            }
+        val loadingState: MutableState<LoadState<AnimatedImage>> =
+            remember(maxHeight, maxWidth) { mutableStateOf(LoadState.Loading()) }
 
-                            is Result.Success -> {
-                                val processed = withContext(Dispatchers.IO) {
-                                    scaleImage(
-                                        image.data,
-//                                        dimension,
-                                        scaleTo
-                                    )
-                                }
-                                state.value = LoadState.Success(processed)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        logger.error(e) {}
-                        state.value = LoadState.Error(e)
-//                        dimension.height = 60
-//                        dimension.width = 60
-                    }
-                }
+        LaunchedEffect(maxHeight, maxWidth, emote.url) {
+            withContext(Dispatchers.IO) {
+                loadingState.value = loadImage(emote, emoteDimensions, maxHeight, maxWidth)
             }
         }
 
-        when (val currentState = state.value) {
-            is LoadState.Loading -> EmoteTooltip(emote) { Loader() }
+        when (val imageState = loadingState.value) {
+            is LoadState.Loading -> EmoteTooltip(emote) { Loading() }
+            is LoadState.Success -> EmoteTooltip(emote) { EmoteImage(emote, imageState.value.animate()) }
             is LoadState.Error -> EmoteTooltip(emote) { Error("emote load error") }
-            is LoadState.Success -> {
-                EmoteTooltip(emote) {
-                    EmoteImage(
-                        emote,
-                        currentState.value.animate()
-                    )
+        }
+    }
+
+    private suspend fun loadImage(
+        emote: ChatState.Emote,
+        dimensions: ChatState.EmoteDimensions,
+        maxHeight: Int?,
+        maxWidth: Int?,
+    ): LoadState<AnimatedImage> {
+        try {
+            return when (val image = imageLoader.getImage(emote.url)) {
+                is Result.Error -> {
+                    dimensions.height = 60
+                    dimensions.width = 60
+                    LoadState.Error(image.exception)
+                }
+
+                is Result.Success -> {
+                    LoadState.Success(scaleImage(image.data, dimensions, maxHeight, maxWidth))
                 }
             }
+        } catch (e: Exception) {
+            logger.error(e) {}
+            dimensions.height = 60
+            dimensions.width = 60
+            return LoadState.Error(e)
         }
     }
 
@@ -126,14 +121,12 @@ class DesktopImageLoader(
     }
 
     @Composable
-    fun Loader() {
+    fun Loading() {
         DisableSelection {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxWidth().padding(20.dp)
-            ) {
-                CircularProgressIndicator()
-            }
+            ) { CircularProgressIndicator() }
         }
     }
 
@@ -151,40 +144,25 @@ class DesktopImageLoader(
 
     private fun scaleImage(
         image: ByteArray,
-//        dimension: Chat.EmoteDimension,
-        scaleTo: Dimension?,
+        dimensions: ChatState.EmoteDimensions,
+        maxHeight: Int?,
+        maxWidth: Int?,
     ): AnimatedImage {
-        val processed = scaleTo?.let {
-            ImageConverter.downscaleImage(
-                image,
-                height = scaleTo.height,
-                width = scaleTo.width
-            )
-        }
+        if (maxHeight == null && maxWidth == null) return image.toAnimatedImage()
 
-        if (processed != null) {
-            if (processed.scaled) {
-//                dimension.height = processed.dimension.height
-//                dimension.width = processed.dimension.width
-            } else { //TODO implement proper scaling for other types
-                if (processed.dimension.width <= scaleTo.width && processed.dimension.height <= scaleTo.height) {
-//                    dimension.height = processed.dimension.height
-//                    dimension.width = processed.dimension.width
-                } else {
-                    val scaledDimension = ImageConverter.scaleImageDimension(processed.dimension, scaleTo)
-//                    dimension.height = scaledDimension.height
-//                    dimension.width = scaledDimension.width
-                }
-            }
-        } else {
-            val scaledDimension = ImageConverter.getDimension(image)
-//            dimension.height = scaledDimension?.height
-//            dimension.width = scaledDimension?.width
+        return runCatching {
+            val scaled = ImageConverter.scaleImage(image, height = maxHeight, width = maxWidth)
+            dimensions.height = scaled.dimensions.height
+            dimensions.width = scaled.dimensions.width
+            return scaled.image.toAnimatedImage()
         }
-
-        val data = Data.makeFromBytes(processed?.image ?: image)
-//        val data = Data.makeFromBytes( image)
-        val codec = Codec.makeFromData(data)
-        return AnimatedImage(codec)
+            .onFailure { logger.error(it) { } }
+            .getOrDefault(image.toAnimatedImage())
     }
+}
+
+private fun ByteArray.toAnimatedImage(): AnimatedImage {
+    val data = Data.makeFromBytes(this)
+    val codec = Codec.makeFromData(data)
+    return AnimatedImage(codec)
 }

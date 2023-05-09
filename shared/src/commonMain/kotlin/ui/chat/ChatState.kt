@@ -152,11 +152,11 @@ class ChatState(
         val name: String,
         val url: String,
     ) {
-        val messageDimension = EmoteDimension()
-        val emoteMenuDimension = EmoteDimension()
+        val messageDimensions = EmoteDimensions()
+        val emoteMenuDimensions = EmoteDimensions()
     }
 
-    class EmoteDimension {
+    class EmoteDimensions {
         var height by mutableStateOf<Int?>(null)
         var width by mutableStateOf<Int?>(null)
     }

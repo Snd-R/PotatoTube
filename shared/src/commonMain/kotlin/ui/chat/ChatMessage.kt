@@ -10,10 +10,7 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import image.Dimension
+import image.ImageLoader
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
@@ -87,11 +84,14 @@ fun UserMessageView(
         }
     }
 
-    val inlineContent = emoteInlineContent(
-        parsedMessage.emotes + customEmotes,
-        emoteSize,
-        model
-    )
+    // inline placeholder must be of fixed size but the size of an image is unknown prior to load
+    // messageDimension state is used to resize placeholder after image was loaded
+    // this causes double recomposition on load if dimension state was changed
+    // image loader should remember loaded image by provided maxHeight and maxWidth to avoid potentially expensive image reload
+    val emotesHeightState by remember { derivedStateOf { (parsedMessage.emotes + customEmotes).map { it.messageDimensions.height } } }
+    val inlineContent = remember(emoteSize, emotesHeightState) {
+        emoteInlineContent(parsedMessage.emotes + customEmotes, emoteSize, model.imageLoader)
+    }
 
     val backgroundColor =
         if (parsedMessage.isMentioned) AppTheme.colors.backgroundLighter
@@ -238,24 +238,21 @@ fun parseMessage(
 fun emoteInlineContent(
     emotes: Collection<ChatState.Emote>,
     emoteSize: TextUnit,
-    model: ChatState
+    imageLoader: ImageLoader,
 ): Map<String, InlineTextContent> = emotes.associate { emote ->
     emote.name to InlineTextContent(
         Placeholder(
-            emote.messageDimension.width?.sp ?: emoteSize,
-            emote.messageDimension.height?.sp ?: emoteSize,
+            emote.messageDimensions.width?.sp ?: emoteSize,
+            emote.messageDimensions.height?.sp ?: emoteSize,
             PlaceholderVerticalAlign.Center
         )
     ) {
-        model.imageLoader.LoadEmoteImage(
-            emote,
-            emote.messageDimension,
-            scaleTo = Dimension(
-                height = emoteSize.value.toInt(),
-                width = emoteSize.value.toInt()
-            )
+        imageLoader.LoadEmoteImage(
+            emote = emote,
+            emoteDimensions = emote.messageDimensions,
+            maxHeight = emoteSize.value.toInt(),
+            maxWidth = null
         )
-
     }
 }
 

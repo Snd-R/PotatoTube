@@ -17,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import image.Dimension
 import ui.common.AppTheme
 import ui.common.LocalWindowSize
 import ui.common.WindowSize
@@ -51,7 +50,6 @@ fun EmoteMenuView(chat: ChatState) {
                 Emote(emotes[it], chat)
             }
         }
-
     }
 }
 
@@ -70,9 +68,10 @@ fun Emote(emote: ChatState.Emote, chat: ChatState) {
             },
     ) {
         chat.imageLoader.LoadEmoteImage(
-            emote,
-            emote.emoteMenuDimension,
-            scaleTo = Dimension(100, 100)
+            emote = emote,
+            emoteDimensions = emote.emoteMenuDimensions,
+            maxHeight = 100,
+            maxWidth = 100
         )
     }
 }

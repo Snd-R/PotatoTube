@@ -24,7 +24,12 @@ import ui.chat.ChatState
 
 class AndroidImageLoader : ImageLoader {
     @Composable
-    override fun LoadEmoteImage(emote: ChatState.Emote, dimension: ChatState.EmoteDimension, scaleTo: Dimension?) {
+    override fun LoadEmoteImage(
+        emote: ChatState.Emote,
+        emoteDimensions: ChatState.EmoteDimensions,
+        maxHeight:Int?,
+        maxWidth:Int?,
+    ) {
         Box {
             val painter = rememberAsyncImagePainter(emote.url)
             Image(

@@ -51,12 +51,15 @@ fun SettingsView(model: SettingsState) {
             Box(modifier = Modifier.fillMaxWidth())
         }
         if (model.isLoading) {
-            CircularProgressIndicator(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.3f))
                     .pointerInput(Unit) {},
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 }

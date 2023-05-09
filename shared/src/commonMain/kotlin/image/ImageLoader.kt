@@ -7,7 +7,8 @@ interface ImageLoader {
     @Composable
     fun LoadEmoteImage(
         emote: ChatState.Emote,
-        dimension: ChatState.EmoteDimension,
-        scaleTo: Dimension?,
+        emoteDimensions: ChatState.EmoteDimensions,
+        maxHeight:Int?,
+        maxWidth:Int?,
     )
 }

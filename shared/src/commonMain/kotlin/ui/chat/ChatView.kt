@@ -155,7 +155,7 @@ private fun MessageBox(model: ChatState, settings: SettingsState) {
             if (!scrollState.canScrollForward)
                 model.setScrollState(false)
 
-            LaunchedEffect(messagesState.size, viewportSize, scrolledUp) {
+            LaunchedEffect(messagesState.size, viewportSize, scrolledUp, scrollState.canScrollForward) {
                 if (messagesState.isNotEmpty() && !scrolledUp && !scrollState.isScrollInProgress) {
                     scrollState.animateScrollToItem(messagesState.size - 1)
                 }
