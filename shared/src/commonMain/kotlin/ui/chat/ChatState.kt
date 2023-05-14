@@ -7,7 +7,7 @@ import cytube.CytubeClient
 import image.ImageLoader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import ui.channel.ConnectionStatus
+import ui.ConnectionStatus
 import ui.poll.PollState
 import ui.settings.SettingsState
 import java.time.Instant

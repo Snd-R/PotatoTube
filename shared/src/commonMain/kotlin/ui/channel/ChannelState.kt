@@ -4,9 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cytube.CytubeClient
-import cytube.CytubeEventHandler
 import image.ImageLoader
 import mu.KotlinLogging
+import ui.ConnectionStatus
 import ui.chat.ChatState
 import ui.chat.ChatState.Message.AnnouncementMessage
 import ui.chat.ChatState.Message.ConnectionMessage
@@ -33,16 +33,12 @@ class ChannelState(
 
     private var isInitialized by mutableStateOf(false)
 
-    fun joinedChannel(channel: String) {
-        connectionStatus.hasConnectedBefore = true
-        connectionStatus.currentChannel = channel
-        connectionStatus.disconnectReason = null
+    fun joinedChannel() {
         chat.addConnectionMessage(ConnectionMessage("Connected", CONNECTED))
     }
 
     fun disconnected() {
-        connectionStatus.disconnect()
-        if (!connectionStatus.hasConnectedBefore)
+        if (settings.channel == null)
             reset()
         else if (!connectionStatus.kicked)
             chat.addConnectionMessage(ConnectionMessage("Disconnected", DISCONNECTED))
@@ -58,9 +54,12 @@ class ChannelState(
     }
 
     fun kicked(reason: String) {
-        connectionStatus.kicked = true
         chat.addConnectionMessage(ConnectionMessage("Kicked: $reason", DISCONNECTED))
-        connectionStatus.disconnect()
+    }
+
+    fun disconnect() {
+        settings.channel = null
+        cytube.disconnect()
     }
 
     private fun reset() {
@@ -70,22 +69,20 @@ class ChannelState(
     }
 
     suspend fun init() {
-        if (isInitialized) return
-        this.isInitialized = true
-
-        cytube.eventHandler = CytubeEventHandler(this)
+        isInitialized = false
+        reset()
         connect()
+        isInitialized = true
     }
 
     suspend fun reconnect() {
         val channel = settings.channel
-        if (channel != null && connectionStatus.currentChannel == null && connectionStatus.hasConnectedBefore) {
+        if (isInitialized && channel != null && connectionStatus.currentChannel == null && !connectionStatus.kicked) {
             try {
                 cytube.joinChannel(channel)
-                connectionStatus.currentChannel = channel
             } catch (e: Exception) {
                 logger.error(e) { }
-                settings.channel = null
+                connectionStatus.disconnect(e.message)
             }
             login()
         }
@@ -95,11 +92,10 @@ class ChannelState(
         val channel = settings.channel
         if (channel != null) {
             try {
-                cytube.connect(channel)
-                connectionStatus.currentChannel = channel
+                cytube.connectToChannel(channel)
             } catch (e: Exception) {
                 logger.error(e) { }
-                settings.channel = null
+                connectionStatus.disconnect(e.message)
             }
             login()
         }
@@ -116,22 +112,5 @@ class ChannelState(
                 settings.username = null
             }
         }
-    }
-}
-
-class ConnectionStatus {
-    var currentUser by mutableStateOf<String?>(null)
-    var currentChannel by mutableStateOf<String?>(null)
-    var isGuest by mutableStateOf(false)
-    var hasConnectedBefore by mutableStateOf(false)
-    var kicked by mutableStateOf(false)
-    var disconnectReason by mutableStateOf<String?>(null)
-
-    fun connectedAndAuthenticated() = currentUser != null && currentChannel != null
-
-    fun disconnect(disconnectReason: String? = null) {
-        currentUser = null
-        currentChannel = null
-        this.disconnectReason = disconnectReason
     }
 }

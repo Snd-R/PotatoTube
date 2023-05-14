@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AccountSettings(model: SettingsState) {
-    val coroutineScope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         val currentUser = model.username ?: model.connectionStatus.currentUser
         Row {
@@ -31,13 +30,7 @@ fun AccountSettings(model: SettingsState) {
         Divider()
         if (currentUser != null) {
             Row(modifier = Modifier.fillMaxWidth()) {
-                Button(onClick = {
-                    model.isLoading = true
-                    coroutineScope.launch {
-                        model.logout()
-                        model.isLoading = false
-                    }
-                }) {
+                Button(onClick = { model.logout() }) {
                     Text("Logout")
                 }
             }

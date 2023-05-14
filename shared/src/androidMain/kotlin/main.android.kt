@@ -1,5 +1,4 @@
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import coil.Coil
@@ -10,10 +9,10 @@ import image.AndroidImageLoader
 import mu.KotlinLogging
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import ui.channel.ChannelState
+import ui.AppState
 import ui.createModel
 
-fun createState(): ChannelState {
+fun createState(): AppState {
     val httpClient = OkHttpClient.Builder()
         .addInterceptor(HttpLoggingInterceptor { message -> KotlinLogging.logger { }.info { message } }
             .setLevel(HttpLoggingInterceptor.Level.BASIC))
@@ -25,7 +24,7 @@ fun createState(): ChannelState {
 
 @Composable
 fun MainView(
-    state: ChannelState,
+    state: AppState,
     windowHeight: Dp,
     windowWidth: Dp
 ) {
@@ -35,6 +34,6 @@ fun MainView(
         .build()
     Coil.setImageLoader(imageLoader)
 
-    LaunchedEffect(Unit) { state.init() }
+//    LaunchedEffect(Unit) { state.init() }
     ui.MainView(state, windowHeight, windowWidth)
 }

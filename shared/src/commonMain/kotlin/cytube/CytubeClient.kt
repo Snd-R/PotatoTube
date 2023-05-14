@@ -22,6 +22,7 @@ import ui.poll.Poll
 import ui.poll.PollOption
 import java.io.IOException
 import java.time.Instant
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -30,6 +31,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 const val CYTUBE_BASE_URL = "https://cytu.be"
+const val CYTUBE_DEFAULT_PARTITION = "https://bigapple.cytu.be:8443"
 const val YOUTUBE_PREFIX = "https://www.youtube.com/watch?v="
 
 private val logger = KotlinLogging.logger {}
@@ -38,14 +40,27 @@ class CytubeClient(
     private val httpClient: OkHttpClient,
     private val moshi: Moshi
 ) {
-    lateinit var eventHandler: CytubeEventHandler
+    private val eventListeners: MutableList<CytubeEventHandler> = CopyOnWriteArrayList()
     private val timeout = 10.seconds
 
     @Volatile
     private var socket: Socket? = null
 
-    suspend fun connect(channel: String) {
+    fun addEventListener(listener: CytubeEventHandler) {
+        this.eventListeners.add(listener)
+    }
+
+    suspend fun connectToChannel(channel: String) {
         val partition = getPartition(channel)
+        connect(partition)
+        joinChannel(channel)
+    }
+
+    fun connectToDefaultPartition() {
+        connect(CYTUBE_DEFAULT_PARTITION)
+    }
+
+    private fun connect(partition: String) {
         socket?.close()
         val options: IO.Options = IO.Options.builder().build()
             .apply {
@@ -60,11 +75,10 @@ class CytubeClient(
         socket.onAnyOutgoing { logger.info { "outgoing ${it.joinToString()}" } }
         registerEventHandler(socket)
         socket.connect()
-        joinChannel(channel)
     }
 
     fun disconnect() {
-        eventHandler.onUserInitiatedDisconnect()
+        eventListeners.forEach { it.onUserInitiatedDisconnect() }
         socket?.close()
     }
 
@@ -114,7 +128,7 @@ class CytubeClient(
 
             socket?.on("errorMsg", errorCallback)
             socket?.once("setPermissions") {
-                eventHandler.onChannelJoin(channelName)
+                eventListeners.forEach { listener -> listener.onChannelJoin(channelName) }
                 continuation.resume(Unit)
             }
             socket?.emit("joinChannel", JSONObject().put("name", channelName))
@@ -199,13 +213,15 @@ class CytubeClient(
     private fun registerEventHandler(socket: Socket) {
         socket.on("chatMsg") { args ->
             val response = args[0] as JSONObject
-            eventHandler.onChatMessage(
-                UserMessage(
-                    timestamp = Instant.ofEpochMilli(response.getLong("time")),
-                    user = response.getString("username"),
-                    message = response.getString("msg")
+            eventListeners.forEach { listener ->
+                listener.onChatMessage(
+                    UserMessage(
+                        timestamp = Instant.ofEpochMilli(response.getLong("time")),
+                        user = response.getString("username"),
+                        message = response.getString("msg")
+                    )
                 )
-            )
+            }
         }
 
         socket.on("login") {
@@ -214,7 +230,7 @@ class CytubeClient(
             if (success) {
                 val name = response.getString("name")
                 val isGuest = response.optBoolean("guest")
-                eventHandler.onLoginSuccess(name, isGuest)
+                eventListeners.forEach { listener -> listener.onLoginSuccess(name, isGuest) }
             }
         }
 
@@ -227,7 +243,7 @@ class CytubeClient(
                 val image = emote.getString("image")
                 emotes.add(ChatState.Emote(name, image))
             }
-            eventHandler.onEmoteList(emotes)
+            eventListeners.forEach { listener -> listener.onEmoteList(emotes) }
         }
 
         socket.on("userlist") {
@@ -245,19 +261,19 @@ class CytubeClient(
                     )
                 )
             }
-            eventHandler.onUserList(users)
+            eventListeners.forEach { listener -> listener.onUserList(users) }
         }
 
         socket.on("usercount") {
             val userCount = it[0] as Int
-            eventHandler.onUserCount(userCount)
+            eventListeners.forEach { listener -> listener.onUserCount(userCount) }
         }
 
         socket.on("setAFK") {
             val response = it[0] as JSONObject
             val afk = response.getBoolean("afk")
             val name = response.getString("name")
-            eventHandler.onSetAfk(name, afk)
+            eventListeners.forEach { listener -> listener.onSetAfk(name, afk) }
         }
 
         socket.on("addUser") {
@@ -269,13 +285,13 @@ class CytubeClient(
                 afk = meta.getBoolean("afk"),
                 muted = meta.getBoolean("muted")
             )
-            eventHandler.onAddUser(user)
+            eventListeners.forEach { listener -> listener.onAddUser(user) }
         }
 
         socket.on("userLeave") {
             val response = it[0] as JSONObject
             val name = response.getString("name")
-            eventHandler.onUserLeave(name)
+            eventListeners.forEach { listener -> listener.onUserLeave(name) }
         }
 
         socket.on("changeMedia") {
@@ -286,7 +302,7 @@ class CytubeClient(
             val mrl = if (type == "yt") {
                 YOUTUBE_PREFIX + id
             } else id
-            eventHandler.onChangeMedia(mrl)
+            eventListeners.forEach { listener -> listener.onChangeMedia(mrl) }
         }
 
         socket.on("mediaUpdate") {
@@ -295,7 +311,7 @@ class CytubeClient(
             val paused = response.getBoolean("paused")
             val time = (currentTime * 1000).toLong()
 
-            eventHandler.onMediaUpdate(time, paused)
+            eventListeners.forEach { listener -> listener.onMediaUpdate(time, paused) }
         }
 
         socket.on("queue") {
@@ -303,7 +319,7 @@ class CytubeClient(
             val item = parsePlaylistItem(response.getJSONObject("item"))
             val after = response.optString("after")
 
-            eventHandler.onQueue(item, after)
+            eventListeners.forEach { listener -> listener.onQueue(item, after) }
         }
 
         socket.on("playlist") {
@@ -312,7 +328,7 @@ class CytubeClient(
             for (i in 0 until response.length()) {
                 items.add(parsePlaylistItem(response.getJSONObject(i)))
             }
-            eventHandler.onPlaylist(items)
+            eventListeners.forEach { listener -> listener.onPlaylist(items) }
         }
 
         socket.on("setPlaylistMeta") {
@@ -321,13 +337,13 @@ class CytubeClient(
             val count = response.getInt("count")
             val time = response.getString("time")
 
-            eventHandler.onPlaylistMeta(rawTime, count, time)
+            eventListeners.forEach { listener -> listener.onPlaylistMeta(rawTime, count, time) }
         }
 
         socket.on("delete") {
             val response = it[0] as JSONObject
             val uid = response.getInt("uid")
-            eventHandler.onDeletePlaylistItem(uid)
+            eventListeners.forEach { listener -> listener.onDeletePlaylistItem(uid) }
         }
 
         socket.on("moveVideo") {
@@ -335,56 +351,56 @@ class CytubeClient(
             val from = response.getInt("from")
             val after = response.getString("after")
             if (after == "prepend")
-                eventHandler.onMoveVideoToStart(from)
-            else eventHandler.onMoveVideo(from, after.toInt())
+                eventListeners.forEach { listener -> listener.onMoveVideoToStart(from) }
+            else eventListeners.forEach { listener -> listener.onMoveVideo(from, after.toInt()) }
         }
 
         socket.on("setPlaylistLocked") {
             val locked = it[0] as Boolean
-            eventHandler.onPlaylistLock(locked)
+            eventListeners.forEach { listener -> listener.onPlaylistLock(locked) }
         }
 
         socket.on("connect") {
             logger.debug { "connected" }
-            eventHandler.onConnect()
+            eventListeners.forEach { listener -> listener.onConnect() }
         }
         socket.on("connect_error") {
             logger.debug { "connection error" }
-            eventHandler.onConnectError()
+            eventListeners.forEach { listener -> listener.onConnectError() }
         }
         socket.on("disconnect") {
             logger.debug { "disconnected" }
-            eventHandler.onDisconnect()
+            eventListeners.forEach { listener -> listener.onDisconnect() }
         }
 
         socket.on("kick") {
             val response = it[0] as JSONObject
-            eventHandler.onKick(response.getString("reason"))
+            eventListeners.forEach { listener -> listener.onKick(response.getString("reason")) }
         }
 
         socket.on("newPoll") {
             val response = it[0] as JSONObject
-            eventHandler.onNewPoll(parsePoll(response))
+            eventListeners.forEach { listener -> listener.onNewPoll(parsePoll(response)) }
         }
         socket.on("updatePoll") {
             val response = it[0] as JSONObject
-            eventHandler.updatePoll(parsePoll(response))
+            eventListeners.forEach { listener -> listener.updatePoll(parsePoll(response)) }
         }
 
         socket.on("closePoll") {
-            eventHandler.closePoll()
+            eventListeners.forEach { listener -> listener.closePoll() }
         }
         socket.on("updateEmote") {
             val response = it[0] as JSONObject
             val name = response.getString("name")
             val image = response.getString("image")
-            eventHandler.onUpdateEmote(name, image)
+            eventListeners.forEach { listener -> listener.onUpdateEmote(name, image) }
         }
         socket.on("removeEmote") {
             val response = it[0] as JSONObject
             val name = response.getString("name")
             val image = response.getString("image")
-            eventHandler.onRemoveEmote(name, image)
+            eventListeners.forEach { listener -> listener.onRemoveEmote(name, image) }
         }
     }
 

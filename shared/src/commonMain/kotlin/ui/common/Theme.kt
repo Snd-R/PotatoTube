@@ -23,6 +23,7 @@ fun CustomTheme(
     CompositionLocalProvider(
         LocalCustomColors provides AppTheme.CustomColors(),
         LocalWindowHeight provides windowHeight,
+        LocalWindowWidth provides windowWidth,
         LocalWindowSize provides windowSize,
         LocalOrientation provides orientation
     ) {
@@ -34,6 +35,7 @@ fun CustomTheme(
 
 val LocalCustomColors = staticCompositionLocalOf { AppTheme.CustomColors() }
 val LocalWindowHeight = compositionLocalOf { 0.dp }
+val LocalWindowWidth = compositionLocalOf { 0.dp }
 val LocalWindowSize = compositionLocalOf { WindowSize.COMPACT }
 val LocalOrientation = compositionLocalOf { Orientation.LANDSCAPE }
 

@@ -1,133 +1,64 @@
 package cytube
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import ui.channel.ChannelState
 import ui.chat.ChatState
 import ui.playlist.PlaylistItem
 import ui.poll.Poll
 
-class CytubeEventHandler(
-    private val channel: ChannelState,
-) {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+interface CytubeEventHandler {
 
-    fun onChatMessage(message: ChatState.Message.UserMessage) {
-        channel.chat.addUserMessage(message)
-    }
+    fun onChatMessage(message: ChatState.Message.UserMessage) {}
 
-    fun onLoginSuccess(name: String, isGuest: Boolean = false) {
-        channel.connectionStatus.currentUser = name
-        channel.connectionStatus.isGuest = isGuest
-    }
+    fun onLoginSuccess(name: String, isGuest: Boolean = false) {}
 
-    fun onEmoteList(emotes: List<ChatState.Emote>) {
-        channel.chat.setEmotes(emotes)
-    }
+    fun onEmoteList(emotes: List<ChatState.Emote>) {}
 
-    fun onUserList(users: List<ChatState.User>) {
-        channel.chat.users.setUsers(users)
-    }
+    fun onUserList(users: List<ChatState.User>) {}
 
-    fun onUserCount(count: Int) {
-        channel.chat.users.userCount(count)
-    }
+    fun onUserCount(count: Int) {}
 
-    fun onSetAfk(username: String, afk: Boolean) {
-        channel.chat.users.setAfk(username, afk)
-    }
+    fun onSetAfk(username: String, afk: Boolean) {}
 
-    fun onAddUser(user: ChatState.User) {
-        channel.chat.users.addUser(user)
-    }
+    fun onAddUser(user: ChatState.User) {}
 
-    fun onUserLeave(username: String) {
-        channel.chat.users.removeUser(username)
-    }
+    fun onUserLeave(username: String) {}
 
-    fun onChangeMedia(url: String) {
-        channel.player.setMrl(url)
-    }
+    fun onChangeMedia(url: String) {}
 
-    fun onMediaUpdate(timeMillis: Long, paused: Boolean) {
-        channel.player.sync(timeMillis, paused)
-    }
+    fun onMediaUpdate(timeMillis: Long, paused: Boolean) {}
 
-    fun onQueue(item: PlaylistItem, position: String) {
-        if (position == "prepend")
-            channel.playlist.addFirst(item)
-        else channel.playlist.addItem(item, position.toInt())
-    }
+    fun onQueue(item: PlaylistItem, position: String) {}
 
-    fun onPlaylist(items: List<PlaylistItem>) {
-        channel.playlist.setPlaylist(items)
-    }
+    fun onPlaylist(items: List<PlaylistItem>) {}
 
-    fun onPlaylistMeta(rawTime: Long, count: Int, time: String) {
-        channel.playlist.rawTime = rawTime
-        channel.playlist.count = count
-        channel.playlist.time = time
-    }
+    fun onPlaylistMeta(rawTime: Long, count: Int, time: String) {}
 
-    fun onDeletePlaylistItem(uid: Int) {
-        channel.playlist.deleteItem(uid)
-    }
+    fun onDeletePlaylistItem(uid: Int) {}
 
-    fun onMoveVideo(from: Int, after: Int) {
-        channel.playlist.moveAfter(from, after)
-    }
+    fun onMoveVideo(from: Int, after: Int) {}
 
-    fun onMoveVideoToStart(uid: Int) {
-        channel.playlist.moveToStart(uid)
-    }
+    fun onMoveVideoToStart(uid: Int) {}
 
-    fun onPlaylistLock(locked: Boolean) {
-        channel.playlist.locked = locked
-    }
+    fun onPlaylistLock(locked: Boolean) {}
 
-    fun onConnect() {
-        coroutineScope.launch { channel.reconnect() }
-    }
+    fun onConnect() {}
 
-    fun onChannelJoin(channelName: String) {
-        channel.joinedChannel(channelName)
-    }
+    fun onChannelJoin(channelName: String) {}
 
-    fun onUserInitiatedDisconnect() {
-        channel.connectionStatus.hasConnectedBefore = false
-        channel.disconnected()
-    }
+    fun onUserInitiatedDisconnect() {}
 
-    fun onDisconnect() {
-        channel.disconnected()
-    }
+    fun onDisconnect() {}
 
-    fun onConnectError() {
-        channel.connectionError()
-    }
+    fun onConnectError() {}
 
-    fun onKick(reason: String) {
-        channel.kicked(reason)
-    }
+    fun onKick(reason: String) {}
 
-    fun onNewPoll(poll: Poll) {
-        channel.newPoll(poll)
-    }
+    fun onNewPoll(poll: Poll) {}
 
-    fun onUpdateEmote(name: String, image: String) {
-        channel.chat.updateEmote(ChatState.Emote(name = name, url = image))
-    }
+    fun onUpdateEmote(name: String, image: String) {}
 
-    fun onRemoveEmote(name: String, image: String) {
-        channel.chat.removeEmote(ChatState.Emote(name = name, url = image))
-    }
+    fun onRemoveEmote(name: String, image: String) {}
 
-    fun updatePoll(poll: Poll) {
-        channel.poll.updatePoll(poll)
-    }
+    fun updatePoll(poll: Poll) {}
 
-    fun closePoll() {
-        channel.poll.closeCurrent()
-    }
+    fun closePoll() {}
 }

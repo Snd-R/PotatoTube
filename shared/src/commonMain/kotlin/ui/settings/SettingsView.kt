@@ -20,7 +20,7 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun SettingsView(model: SettingsState) {
+fun SettingsView(model: SettingsState, onDismiss: () -> Unit) {
     Box {
         Row(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -28,7 +28,7 @@ fun SettingsView(model: SettingsState) {
                     .fillMaxWidth(0.30f)
                     .fillMaxHeight()
                     .background(color = AppTheme.colors.backgroundDarker)
-            ) { SettingTabs(model, Modifier.align(Alignment.TopEnd)) }
+            ) { SettingTabs(model, Modifier.align(Alignment.TopEnd), onDismiss) }
 
             Row(
                 modifier = Modifier
@@ -65,7 +65,7 @@ fun SettingsView(model: SettingsState) {
 }
 
 @Composable
-fun SettingTabs(settings: SettingsState, modifier: Modifier = Modifier) {
+fun SettingTabs(settings: SettingsState, modifier: Modifier = Modifier, onDismiss: () -> Unit) {
     Column(
         modifier = modifier
             .widthIn(min = 300.dp, max = 300.dp)
@@ -127,6 +127,7 @@ fun SettingTabs(settings: SettingsState, modifier: Modifier = Modifier) {
                     settings.currentTab = SettingsState.CurrentTab.CHAT
                     settings.isLoading = false
                     settings.isActiveScreen = false
+                    onDismiss()
                 }
             }
         ) {

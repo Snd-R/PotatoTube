@@ -8,7 +8,8 @@ import cytube.CytubeClient
 import player.PlayerType
 import settings.Settings
 import settings.SettingsRepository
-import ui.channel.ConnectionStatus
+import ui.ConnectionStatus
+import ui.MainActiveScreen
 
 class SettingsState(
     val connectionStatus: ConnectionStatus,
@@ -16,18 +17,21 @@ class SettingsState(
     private val cytube: CytubeClient,
 ) {
     var isActiveScreen by mutableStateOf(false)
+    var activeScreen by mutableStateOf(MainActiveScreen.HOME)
+    var channel by mutableStateOf<String?>(null)
+
     var currentTab by mutableStateOf(CurrentTab.CHAT)
     var fontSize by mutableStateOf(13.sp)
     var emoteSize by mutableStateOf(120.sp)
     var isTimestampsEnabled by mutableStateOf(false)
     var timestampFormat by mutableStateOf("")
     var historySize by mutableStateOf(0)
-    var channel by mutableStateOf<String?>(null)
     var username by mutableStateOf<String?>(null)
     var syncThreshold by mutableStateOf(2000L)
     var isLoading by mutableStateOf(false)
 
     var playerType by mutableStateOf<PlayerType?>(null)
+    var favoriteChannels = mutableStateOf<List<String>>(emptyList())
 
     suspend fun save() {
         settingsRepository.saveSettings(
@@ -37,47 +41,36 @@ class SettingsState(
                 isTimestampsEnabled = isTimestampsEnabled,
                 timestampFormat = timestampFormat,
                 historySize = historySize,
-                currentChannel = channel,
                 accountName = username,
-                player = playerType
+                player = playerType,
+                favoriteChannels = favoriteChannels.value
             )
         )
     }
 
-    suspend fun logout() {
+    fun logout() {
         username?.let { settingsRepository.deletePassword(it) }
         username = null
-
-        val channelName = channel
-        if (channelName != null) {
-            cytube.connect(channelName)
-            connectionStatus.currentChannel = channelName
-        }
     }
 
     fun disconnect() {
         channel = null
         cytube.disconnect()
+        activeScreen = MainActiveScreen.HOME
     }
 
-    suspend fun changeChannel(channelName: String) {
-        channel = null
-        connectionStatus.currentChannel = null
-        cytube.connect(channelName)
-        connectionStatus.currentChannel = channelName
+    fun changeChannel(channelName: String) {
         channel = channelName
-
-        val username = username
-        val password = username?.let {
-            settingsRepository.loadPassword(it)
-        }
-        if (username != null && password != null)
-            cytube.login(username, password)
+        activeScreen = MainActiveScreen.CHANNEL
     }
 
     fun persistCredentials(username: String, password: String) {
         this.username = username
         settingsRepository.setPassword(username, password)
+    }
+
+    fun addFavoriteChannel(channelName: String) {
+        favoriteChannels.value = favoriteChannels.value.plus(channelName)
     }
 
     suspend fun login(username: String, password: String): String {

@@ -31,6 +31,8 @@ kotlin {
 
                 implementation(compose.materialIconsExtended)
 
+                implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
+
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
                 implementation("org.slf4j:slf4j-api:2.0.7")

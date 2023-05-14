@@ -34,11 +34,16 @@ import ui.settings.SettingsView
 import ui.videoplayer.VideoPlayerView
 
 @Composable
-fun CytubeMainView(model: ChannelState) {
+fun ChannelView(model: ChannelState) {
+    val settings = model.settings
+    LaunchedEffect(settings.channel, settings.username) {
+        model.init()
+    }
+
     val settingsOverlayState = remember { OverlayDialogState(Hidden) }
     OverlayDialog(
         overlayState = settingsOverlayState,
-        overlayContent = { SettingsView(model.settings) }
+        overlayContent = { SettingsView(model.settings, onDismiss = { model.settings.isActiveScreen = false }) }
     ) {
         when (LocalOrientation.current) {
             Orientation.LANDSCAPE -> HorizontalView(model)
@@ -50,6 +55,10 @@ fun CytubeMainView(model: ChannelState) {
         settingsOverlayState.open()
     } else {
         settingsOverlayState.close()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { model.disconnect() }
     }
 }
 

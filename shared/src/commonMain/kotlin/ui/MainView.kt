@@ -10,25 +10,33 @@ import image.ImageLoader
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import settings.getSettingsRepository
+import ui.MainActiveScreen.CHANNEL
+import ui.MainActiveScreen.HOME
 import ui.channel.ChannelState
-import ui.channel.ConnectionStatus
-import ui.channel.CytubeMainView
+import ui.channel.ChannelView
 import ui.common.CustomTheme
+import ui.home.HomePageState
+import ui.home.HomePageView
 import ui.settings.SettingsState
 
 @Composable
-fun MainView(model: ChannelState, windowHeight: Dp, windowWidth: Dp) {
+fun MainView(state: AppState, windowHeight: Dp, windowWidth: Dp) {
     CustomTheme(windowHeight, windowWidth) {
         Surface {
-            CytubeMainView(model)
+            when (state.settings.activeScreen) {
+                HOME -> HomePageView(state.homePage)
+                CHANNEL -> ChannelView(state.channel)
+            }
         }
     }
 }
 
-fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): ChannelState {
+fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): AppState {
     val moshi = Moshi.Builder().build()
+
     val cytubeClient = CytubeClient(httpClient, moshi)
     val settingsRepository = getSettingsRepository()
+
     val connectionStatus = ConnectionStatus()
 
     val settings = runBlocking {
@@ -43,15 +51,19 @@ fun createModel(httpClient: OkHttpClient, imageLoader: ImageLoader): ChannelStat
             emoteSize = config.emoteSize.sp
             historySize = config.historySize
             username = config.accountName
-            channel = config.currentChannel
             playerType = config.player
+            favoriteChannels.value = config.favoriteChannels
+
         }
     }
 
-    return ChannelState(
+    val channel = ChannelState(
         connectionStatus = connectionStatus,
         settings = settings,
         cytube = cytubeClient,
         imageLoader = imageLoader
     )
+    val homePage = HomePageState(settings, connectionStatus, cytubeClient)
+
+    return AppState(channel, homePage, settings, connectionStatus, cytubeClient)
 }
