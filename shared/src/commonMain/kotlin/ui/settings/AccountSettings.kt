@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -40,23 +44,57 @@ fun AccountSettings(model: SettingsState) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Login(model: SettingsState) {
+    val focusManager = LocalFocusManager.current
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     var loginError by remember { mutableStateOf<String?>(null) }
 
+    fun login() {
+        model.isLoading = true
+        coroutineScope.launch {
+            try {
+                model.login(username, password)
+                model.persistCredentials(username, password)
+
+            } catch (e: Exception) {
+                loginError = e.message
+            }
+            model.isLoading = false
+        }
+    }
+
+    val textFieldModifier = Modifier.onPreviewKeyEvent {
+        when {
+            it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {
+                login()
+                true
+            }
+
+            it.key == Key.Tab && it.type == KeyEventType.KeyDown -> {
+                focusManager.moveFocus(FocusDirection.Down)
+                true
+            }
+
+            else -> false
+        }
+    }
+
     TextField(
         value = username,
         label = { Text(text = "User Name") },
-        onValueChange = { username = it },
+        onValueChange = { username = it.trim() },
+        modifier = textFieldModifier
     )
     TextField(
         value = password,
         label = { Text(text = "Password") },
-        onValueChange = { password = it },
+        onValueChange = { password = it.trim() },
         visualTransformation = PasswordVisualTransformation(),
+        modifier = textFieldModifier,
     )
 
     if (loginError != null) {
@@ -68,20 +106,8 @@ fun Login(model: SettingsState) {
 
     Button(
         onClick = {
-
-            model.isLoading = true
-            coroutineScope.launch {
-                try {
-                    model.login(username, password)
-                    model.persistCredentials(username, password)
-
-                } catch (e: Exception) {
-                    loginError = e.message
-                }
-                model.isLoading = false
-            }
+            login()
         }) {
         Text("Login")
     }
-
 }

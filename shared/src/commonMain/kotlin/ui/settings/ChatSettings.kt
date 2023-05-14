@@ -58,7 +58,7 @@ fun ChatSettings(settings: SettingsState) {
                 onValueChange = { value ->
                     try {
                         DateTimeFormatter.ofPattern(value)
-                        timestampFormat = value
+                        timestampFormat = value.trim()
                         settings.timestampFormat = value
                     } catch (e: IllegalArgumentException) {
                         //ignore
@@ -73,7 +73,6 @@ fun ChatSettings(settings: SettingsState) {
                 onCheckedChange = { settings.isTimestampsEnabled = it },
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
-//            Spacer(modifier = Modifier.width(15.dp))
             Text("Enable Timestamps", modifier = Modifier.align(Alignment.CenterVertically))
         }
     }

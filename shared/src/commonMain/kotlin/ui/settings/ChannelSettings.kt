@@ -1,20 +1,39 @@
 package ui.settings
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.LoadState
 
-
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ChannelSettings(settings: SettingsState) {
     val coroutineScope = rememberCoroutineScope()
-    var text by remember { mutableStateOf("") }
+    var channelName by remember { mutableStateOf("") }
     var channelLoadState by remember { mutableStateOf<LoadState<Unit>?>(null) }
+
+    fun joinChannel() {
+        if (channelName.isNotBlank())
+            coroutineScope.launch {
+                channelLoadState = LoadState.Loading()
+
+                channelLoadState = try {
+                    settings.changeChannel(channelName)
+                    LoadState.Success(Unit)
+                } catch (e: Exception) {
+                    LoadState.Error(e)
+                }
+                channelName = ""
+            }
+    }
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Channel Settings")
         val currentChannelText = settings.channel?.let { "Current channel: ${settings.channel}" }
@@ -32,28 +51,24 @@ fun ChannelSettings(settings: SettingsState) {
         Divider()
         Row(modifier = Modifier.fillMaxWidth()) {
             TextField(
-                value = text,
+                value = channelName,
                 label = { Text(text = "new channel") },
-                onValueChange = { text = it },
-                modifier = Modifier.weight(1f),
+                onValueChange = { channelName = it.trim() },
+                modifier = Modifier.weight(1f)
+                    .onPreviewKeyEvent {
+                        when {
+                            it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {
+                                joinChannel()
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
             )
             Spacer(Modifier.size(10.dp))
             Button(
-                onClick = {
-                    if (text.isNotBlank())
-                        coroutineScope.launch {
-                            channelLoadState = LoadState.Loading()
-
-                            channelLoadState = try {
-                                settings.changeChannel(text)
-                                LoadState.Success(Unit)
-                            } catch (e: Exception) {
-                                LoadState.Error(e)
-                            }
-
-                            text = ""
-                        }
-                }) {
+                onClick = { joinChannel() }) {
                 Text("Connect")
             }
         }

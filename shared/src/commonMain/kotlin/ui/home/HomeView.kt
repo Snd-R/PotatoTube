@@ -185,7 +185,6 @@ private fun LazyGridItemScope.FavoriteChannelItem(
             }
         }
     }
-
 }
 
 @Composable
