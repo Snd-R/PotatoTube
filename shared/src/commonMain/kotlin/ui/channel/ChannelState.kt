@@ -70,9 +70,11 @@ class ChannelState(
 
     suspend fun init() {
         isInitialized = false
+        chat.isLoading = true
         reset()
         connect()
         isInitialized = true
+        chat.isLoading = false
     }
 
     suspend fun reconnect() {

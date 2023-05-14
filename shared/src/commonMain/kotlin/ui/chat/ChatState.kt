@@ -30,6 +30,7 @@ class ChatState(
     var scrolledUp = MutableStateFlow(false)
     var showUserList by mutableStateOf(false)
 
+    var isLoading by mutableStateOf(true)
 
     fun addUserMessage(message: Message.UserMessage) {
         val lastTimestamp = lastUserMessageTimestamp.value

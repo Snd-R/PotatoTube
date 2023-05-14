@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -17,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +34,6 @@ import java.time.format.DateTimeFormatter
 fun ChatMessage(
     fontSize: TextUnit,
     emoteSize: TextUnit,
-    height: Dp,
     index: Int,
     message: ChatState.Message,
     model: ChatState,
@@ -45,13 +42,12 @@ fun ChatMessage(
         is UserMessage -> UserMessageView(
             fontSize,
             emoteSize,
-            height,
             index,
             message,
             model,
         )
 
-        is ConnectionMessage -> ConnectionMessage(fontSize, height, message)
+        is ConnectionMessage -> ConnectionMessage(fontSize, message)
         is AnnouncementMessage -> AnnouncementMessageView((fontSize.value + 5f).sp, message)
         is SystemMessage -> SystemMessageView(((fontSize.value - 1f).coerceAtLeast(3f)).sp, message)
     }
@@ -61,7 +57,6 @@ fun ChatMessage(
 fun UserMessageView(
     fontSize: TextUnit,
     emoteSize: TextUnit,
-    height: Dp,
     index: Int,
     message: UserMessage,
     model: ChatState,
@@ -100,7 +95,6 @@ fun UserMessageView(
 
     Box(
         modifier = Modifier
-            .heightIn(min = height)
             .fillMaxWidth()
             .background(backgroundColor)
     ) {
@@ -145,13 +139,11 @@ fun SystemMessageView(
 @Composable
 fun ConnectionMessage(
     fontSize: TextUnit,
-    height: Dp,
     message: ConnectionMessage,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = height)
             .border(0.dp, color = AppTheme.colors.backgroundMedium),
         contentAlignment = Alignment.Center,
     ) {

@@ -8,7 +8,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentColor
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.Schedule
@@ -19,146 +22,90 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ui.common.AppTheme
+import ui.common.LoadingOverlay
 import ui.platform.VerticalScrollbar
 import ui.poll.PollChatView
 import ui.settings.SettingsState
 
 @Composable
-fun ChatView(model: ChatState) = Surface(
-    modifier = Modifier.fillMaxSize()
-) {
-    ChatPanel(model)
-}
-
-@Composable
-private fun ChatPanel(model: ChatState) {
-    Column {
-        ChannelBar(model)
+fun ChatView(state: ChatState) {
+    Column(Modifier.fillMaxSize()) {
+        ChannelBar(state)
         Divider()
         Row(modifier = Modifier.weight(1f)) {
-            if (model.showUserList) {
-                UserList(model)
-                Divider(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .fillMaxHeight()
-                )
+            if (state.showUserList) {
+                UserList(state)
+                Divider(modifier = Modifier.width(1.dp).fillMaxHeight())
             }
-
-            MessageBox(model, model.settings)
+            MessageBox(state, state.settings)
         }
-        Column(modifier = Modifier.background(AppTheme.colors.backgroundDarker)) {
-            MessageInputView(chat = model)
-            var emoteMenu by remember { mutableStateOf(false) }
-            val channelEmotesState by model.channelEmotes.collectAsState()
-
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(vertical = 5.dp, horizontal = 3.dp)
-                    .heightIn(max = 400.dp)
-            ) {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = Color.LightGray,
-                    modifier = Modifier
-                        .size(25.dp)
-                        .clickable {
-                            model.settings.isActiveScreen = true
-                        }
-                )
-                Spacer(modifier = Modifier.size(10.dp))
-                Icon(
-                    Icons.Default.Mood,
-                    contentDescription = "Emotes",
-                    tint = if (emoteMenu) AppTheme.colors.buttonActive else Color.LightGray,
-                    modifier = Modifier
-                        .size(25.dp)
-                        .clickable(enabled = channelEmotesState.isNotEmpty()) {
-                            emoteMenu = !emoteMenu
-                        }
-                )
-
-
-            }
-
-            if (emoteMenu) {
-                Box(
-                    modifier = Modifier
-                        .heightIn(min = 0.dp, max = 400.dp)
-                        .widthIn(min = 0.dp, max = 600.dp)
-                ) {
-                    EmoteMenuView(model)
-                }
-            }
+        Column(Modifier.background(AppTheme.colors.backgroundDarker)) {
+            MessageInputView(state)
+            ExtensionButtons(state, Modifier.align(Alignment.Start))
         }
     }
+    if (state.isLoading) LoadingOverlay()
 }
 
 @Composable
 private fun MessageBox(model: ChatState, settings: SettingsState) {
-    with(LocalDensity.current) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .background(AppTheme.colors.backgroundDark)
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .background(AppTheme.colors.backgroundDark)
+    ) {
+        val scrolledUp by model.scrolledUp.collectAsState()
+
+        val scrollState = rememberLazyListState()
+        val viewportSize by remember { derivedStateOf { scrollState.layoutInfo.viewportSize } }
+        val messagesState by model.messages.collectAsState()
+
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier.onScroll {
+                model.setScrollState(true)
+            },
         ) {
-            val scrolledUp by model.scrolledUp.collectAsState()
+            items(messagesState.size) {
+                SelectionContainer {
+                    ChatMessage(
+                        settings.fontSize,
+                        settings.emoteSize,
+                        it,
+                        messagesState[it],
+                        model,
+                    )
+                }
+            }
+        }
 
-            val scrollState = rememberLazyListState()
-            val viewportSize by remember { derivedStateOf { scrollState.layoutInfo.viewportSize } }
-            val messagesState by model.messages.collectAsState()
+        VerticalScrollbar(
+            Modifier.align(Alignment.CenterEnd),
+            scrollState
+        )
 
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier.onScroll {
-                    model.setScrollState(true)
-                },
+        if (model.poll.currentPoll && model.poll.showChatPoll) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = 15.dp)
+                    .padding(top = 5.dp, start = 3.dp, end = 3.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, color = AppTheme.colors.backgroundLight, shape = RoundedCornerShape(10.dp))
+                    .background(color = AppTheme.colors.backgroundDark)
             ) {
-                items(messagesState.size) {
-                    SelectionContainer {
-                        ChatMessage(
-                            settings.fontSize,
-                            settings.emoteSize,
-                            20.sp.toDp() * 1.5f,
-                            it,
-                            messagesState[it],
-                            model,
-                        )
-                    }
-                }
+                PollChatView(model.poll)
             }
+        }
+        if (!scrollState.canScrollForward)
+            model.setScrollState(false)
 
-            VerticalScrollbar(
-                Modifier.align(Alignment.CenterEnd),
-                scrollState
-            )
-
-            if (model.poll.currentPoll && model.poll.showChatPoll) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(elevation = 15.dp)
-                        .padding(top = 5.dp, start = 3.dp, end = 3.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .border(1.dp, color = AppTheme.colors.backgroundLight, shape = RoundedCornerShape(10.dp))
-                        .background(color = AppTheme.colors.backgroundDark)
-                ) {
-                    PollChatView(model.poll)
-                }
-            }
-            if (!scrollState.canScrollForward)
-                model.setScrollState(false)
-
-            LaunchedEffect(messagesState.size, viewportSize, scrolledUp, scrollState.canScrollForward) {
-                if (messagesState.isNotEmpty() && !scrolledUp && !scrollState.isScrollInProgress && scrollState.canScrollForward) {
-                    scrollState.scrollToItem(messagesState.size - 1)
-                }
+        LaunchedEffect(messagesState.size, viewportSize, scrolledUp, scrollState.canScrollForward) {
+            if (messagesState.isNotEmpty() && !scrolledUp && !scrollState.isScrollInProgress && scrollState.canScrollForward) {
+                scrollState.scrollToItem(messagesState.size - 1)
             }
         }
     }
@@ -215,6 +162,48 @@ fun ActiveUser(user: ChatState.User) {
             fontWeight = weight,
             modifier = Modifier.align(Alignment.Top)
         )
+    }
+}
+
+@Composable
+private fun ExtensionButtons(state: ChatState, modifier: Modifier) {
+    var showEmoteMenu by remember { mutableStateOf(false) }
+    val channelEmotes by state.channelEmotes.collectAsState()
+    Row(
+        modifier = Modifier
+            .padding(vertical = 5.dp, horizontal = 3.dp)
+            .heightIn(max = 400.dp)
+            .then(modifier)
+    ) {
+        Icon(
+            Icons.Default.Settings,
+            contentDescription = "Settings",
+            tint = Color.LightGray,
+            modifier = Modifier
+                .size(25.dp)
+                .clickable { state.settings.isActiveScreen = true }
+        )
+        Spacer(modifier = Modifier.size(10.dp))
+        Icon(
+            Icons.Default.Mood,
+            contentDescription = "Emotes",
+            tint = if (showEmoteMenu) AppTheme.colors.buttonActive else Color.LightGray,
+            modifier = Modifier
+                .size(25.dp)
+                .clickable(enabled = channelEmotes.isNotEmpty()) {
+                    showEmoteMenu = !showEmoteMenu
+                }
+        )
+    }
+
+    if (showEmoteMenu) {
+        Box(
+            modifier = Modifier
+                .heightIn(max = 400.dp)
+                .widthIn(max = 600.dp)
+        ) {
+            EmoteMenuView(state)
+        }
     }
 }
 
