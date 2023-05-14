@@ -125,7 +125,6 @@ fun SettingTabs(settings: SettingsState, modifier: Modifier = Modifier, onDismis
                     settings.save()
                     settings.currentTab = SettingsState.CurrentTab.CHAT
                     settings.isLoading = false
-                    settings.isActiveScreen = false
                     onDismiss()
                 }
             }

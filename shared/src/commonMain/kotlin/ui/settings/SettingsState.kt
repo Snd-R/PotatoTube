@@ -16,7 +16,6 @@ class SettingsState(
     val settingsRepository: SettingsRepository,
     private val cytube: CytubeClient,
 ) {
-    var isActiveScreen by mutableStateOf(false)
     var activeScreen by mutableStateOf(MainActiveScreen.HOME)
     var channel by mutableStateOf<String?>(null)
 

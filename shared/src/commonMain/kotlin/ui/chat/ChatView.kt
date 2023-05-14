@@ -57,7 +57,7 @@ private fun MessageBox(model: ChatState, settings: SettingsState) {
         modifier = Modifier.fillMaxSize()
             .background(AppTheme.colors.backgroundDark)
     ) {
-        val scrolledUp by model.scrolledUp.collectAsState()
+        val scrolledUp by model.isScrolledUp.collectAsState()
 
         val scrollState = rememberLazyListState()
         val viewportSize by remember { derivedStateOf { scrollState.layoutInfo.viewportSize } }
@@ -181,7 +181,7 @@ private fun ExtensionButtons(state: ChatState, modifier: Modifier) {
             tint = Color.LightGray,
             modifier = Modifier
                 .size(25.dp)
-                .clickable { state.settings.isActiveScreen = true }
+                .clickable { state.showSettingsOverlay = true }
         )
         Spacer(modifier = Modifier.size(10.dp))
         Icon(

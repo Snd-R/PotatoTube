@@ -43,7 +43,7 @@ fun ChannelView(model: ChannelState) {
     val settingsOverlayState = remember { OverlayDialogState(Hidden) }
     OverlayDialog(
         overlayState = settingsOverlayState,
-        overlayContent = { SettingsView(model.settings, onDismiss = { model.settings.isActiveScreen = false }) }
+        overlayContent = { SettingsView(model.settings, onDismiss = { model.chat.showSettingsOverlay = false }) }
     ) {
         when (LocalOrientation.current) {
             Orientation.LANDSCAPE -> HorizontalView(model)
@@ -51,11 +51,8 @@ fun ChannelView(model: ChannelState) {
         }
     }
 
-    if (model.chat.settings.isActiveScreen) {
-        settingsOverlayState.open()
-    } else {
-        settingsOverlayState.close()
-    }
+    if (model.chat.showSettingsOverlay) settingsOverlayState.open()
+    else settingsOverlayState.close()
 
     DisposableEffect(Unit) {
         onDispose { model.disconnect() }
@@ -174,7 +171,7 @@ private fun VideoPanel(model: ChannelState) {
 @Composable
 private fun VideoPlayer(model: ChannelState, scrollState: ScrollState) {
     val coroutineScope = rememberCoroutineScope()
-    val playerHeight = if (model.settings.isActiveScreen) Modifier.size(0.dp)
+    val playerHeight = if (model.chat.showSettingsOverlay) Modifier.size(0.dp)
     else when (LocalOrientation.current) {
         Orientation.LANDSCAPE -> Modifier.heightIn(min = 0.dp, max = LocalWindowHeight.current)
         Orientation.PORTRAIT -> Modifier

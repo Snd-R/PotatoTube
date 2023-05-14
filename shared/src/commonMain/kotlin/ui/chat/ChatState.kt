@@ -19,18 +19,19 @@ class ChatState(
     val imageLoader: ImageLoader,
     val poll: PollState,
 ) {
-    val lastUserMessageTimestamp = MutableStateFlow<Instant?>(null)
+    private val lastUserMessageTimestamp = MutableStateFlow<Instant?>(null)
     val messages = MutableStateFlow(listOf<Message>())
     val channelEmotes = MutableStateFlow(emptyMap<String, Emote>())
     val customEmotes = MutableStateFlow(emptyMap<String, Emote>())
 
     var users = Users()
     val messageInput = MessageInputState()
-
-    var scrolledUp = MutableStateFlow(false)
-    var showUserList by mutableStateOf(false)
+    var isScrolledUp = MutableStateFlow(false)
 
     var isLoading by mutableStateOf(true)
+    var showUserList by mutableStateOf(false)
+
+    var showSettingsOverlay by mutableStateOf(false)
 
     fun addUserMessage(message: Message.UserMessage) {
         val lastTimestamp = lastUserMessageTimestamp.value
@@ -118,7 +119,7 @@ class ChatState(
     }
 
     fun setScrollState(state: Boolean) {
-        this.scrolledUp.value = state
+        this.isScrolledUp.value = state
     }
 
     suspend fun login(username: String) {

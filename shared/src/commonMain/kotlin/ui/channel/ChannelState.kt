@@ -40,7 +40,7 @@ class ChannelState(
     fun disconnected() {
         if (settings.channel == null)
             reset()
-        else if (!connectionStatus.kicked)
+        else if (!connectionStatus.kicked && isInitialized)
             chat.addConnectionMessage(ConnectionMessage("Disconnected", DISCONNECTED))
     }
 
