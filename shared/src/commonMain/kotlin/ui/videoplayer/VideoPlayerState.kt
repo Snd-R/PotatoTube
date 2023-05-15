@@ -1,5 +1,8 @@
 package ui.videoplayer
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import ui.settings.SettingsState
@@ -9,7 +12,6 @@ import kotlin.math.absoluteValue
 class VideoPlayerState(
     private val settingsModel: SettingsState
 ) {
-
     var timeState = TimeState()
     var isPlaying = MutableStateFlow(true)
     var length = MutableStateFlow(-1L)
@@ -18,6 +20,8 @@ class VideoPlayerState(
     var isBuffering = MutableStateFlow(false)
 
     var mrl = MutableStateFlow<String?>(null)
+
+    var isInTheaterMode by mutableStateOf(false)
 
     fun seekTo(time: Long) {
         this.timeState.update(time)
@@ -76,6 +80,10 @@ class VideoPlayerState(
 
     fun currentTimeString(): String {
         return durationString(timeState.time.value)
+    }
+
+    fun toggleTheaterMode() {
+        isInTheaterMode = !isInTheaterMode
     }
 
     private fun durationString(millis: Long): String {

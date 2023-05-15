@@ -20,6 +20,9 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.dp
 import player.Player
 import player.PlayerType
+import ui.common.LocalOrientation
+import ui.common.LocalWindowHeight
+import ui.common.Orientation.LANDSCAPE
 
 @Composable
 actual fun VideoPlayerView(
@@ -29,22 +32,27 @@ actual fun VideoPlayerView(
     scrollState: ScrollState
 ) =
     Layout({
+        val heightModifier = if (LocalOrientation.current == LANDSCAPE && state.isInTheaterMode) {
+            Modifier.height(LocalWindowHeight.current)
+        } else Modifier
+
         Box(
             modifier = Modifier
                 .background(Color.Black)
                 .fillMaxWidth()
-                .then(modifier),
+                .then(modifier)
+                .then(heightModifier),
             contentAlignment = Alignment.Center
         ) {
             val mrl by state.mrl.collectAsState()
             if (mrl != null) when (type.player) {
                 Player.VLC_DIRECT -> VlcDirectRenderVideoPlayer(state, modifier)
-                Player.VLC_EMBEDDED -> VlcEmbeddedVideoPlayer(state, modifier)
+                Player.VLC_EMBEDDED -> VlcEmbeddedVideoPlayer(state, modifier, scrollState)
                 Player.MPV_EMBEDDED -> MpvEmbeddedVideoPlayer(state, modifier, scrollState)
             }
             else Box(Modifier.aspectRatio(1.735f))
         }
-        VideoControls(state, Modifier.fillMaxWidth())
+        VideoControls(state, Modifier.background(Color.Black).fillMaxWidth())
     },
         measurePolicy = { measurables, constraints ->
             if (measurables.isEmpty()) return@Layout layout(0, 0) {}
@@ -80,7 +88,7 @@ fun VideoControls(state: VideoPlayerState, modifier: Modifier = Modifier) {
         )
         Row(
             modifier = Modifier
-                .padding(bottom = 10.dp, start = 20.dp)
+                .padding(bottom = 10.dp, start = 20.dp, end = 20.dp)
                 .align(Alignment.Start),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -103,6 +111,15 @@ fun VideoControls(state: VideoPlayerState, modifier: Modifier = Modifier) {
             Text(
                 "${state.currentTimeString()} / ${state.lengthString()}",
                 modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Spacer(Modifier.weight(1.0f))
+            Icon(
+                Icons.Default.FitScreen,
+                contentDescription = "Theatre Mode",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable { state.toggleTheaterMode() }
             )
         }
     }

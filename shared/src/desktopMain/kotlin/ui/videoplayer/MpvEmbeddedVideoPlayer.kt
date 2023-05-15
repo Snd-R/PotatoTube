@@ -20,9 +20,9 @@ fun MpvEmbeddedVideoPlayer(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val mediaPlayerComponent = remember {
-        MpvEmbeddedPlayerComponent { scrollAmount: Float ->
+        MpvEmbeddedPlayerComponent(scrollHandler = { scrollAmount: Float ->
             coroutineScope.launch { if (!scrollState.isScrollInProgress) scrollState.scrollBy(scrollAmount) }
-        }
+        })
     }
 
     val mediaPlayer = remember { mediaPlayerComponent.mediaPlayer }

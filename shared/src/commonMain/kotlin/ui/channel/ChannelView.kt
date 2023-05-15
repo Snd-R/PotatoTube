@@ -194,9 +194,11 @@ private fun VideoPlayer(model: ChannelState, scrollState: ScrollState) {
             ) { Text("Player Unavailable") }
 
         }
-
+        val windowSize = LocalWindowSize.current
         val maxScroll = with(LocalDensity.current) { scrollState.maxValue.toDp() }
-        if (maxScroll > 50.dp && scrollState.canScrollForward) {
+        if (windowSize != WindowSize.FULL && windowSize != WindowSize.EXPANDED
+            && maxScroll > 50.dp && scrollState.canScrollForward
+        ) {
             TextButton(
                 modifier =
                 if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)
