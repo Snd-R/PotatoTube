@@ -124,6 +124,7 @@ class ChatState(
 
     suspend fun login(username: String) {
         cytube.login(username, null)
+        settings.username = username
     }
 
     sealed class Message {

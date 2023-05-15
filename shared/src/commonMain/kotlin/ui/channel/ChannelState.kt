@@ -69,6 +69,10 @@ class ChannelState(
     }
 
     suspend fun init() {
+        if (connectionStatus.currentChannel == settings.channel
+            && connectionStatus.currentUser == settings.username
+        ) return
+
         isInitialized = false
         chat.isLoading = true
         reset()
