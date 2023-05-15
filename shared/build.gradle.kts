@@ -82,6 +82,7 @@ kotlin {
 
                 implementation("com.twelvemonkeys.imageio:imageio-core:3.9.4")
                 runtimeOnly("com.twelvemonkeys.imageio:imageio-jpeg:3.9.4")
+                implementation("com.madgag:animated-gif-lib:1.4")
                 implementation("org.apache.tika:tika-core:2.7.0")
 
                 implementation("com.github.javakeyring:java-keyring:1.0.2")

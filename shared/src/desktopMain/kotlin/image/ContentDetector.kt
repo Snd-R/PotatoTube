@@ -13,7 +13,7 @@ object ContentDetector {
 
     fun isSupportedMediaType(type: String) = type.startsWith("image/")
 
-    fun isAnimated(type: String) = type == "image/gif"
+    fun isGif(type: String) = type == "image/gif"
 
     fun toImageType(mediaType: String) = ImageType.values().firstOrNull { it.mediaType == mediaType }
 }

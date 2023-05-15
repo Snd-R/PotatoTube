@@ -1,12 +1,13 @@
 package image
 
+import com.madgag.gif.fmsware.AnimatedGifEncoder
+import com.madgag.gif.fmsware.GifDecoder
 import com.twelvemonkeys.image.ResampleOp
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 object ImageConverter {
-
     fun scaleImage(image: ByteArray, height: Int?, width: Int?): Image {
         if (height == null && width == null) throw IllegalStateException("scale height and width cannot be null")
 
@@ -14,21 +15,14 @@ object ImageConverter {
         if (!ContentDetector.isSupportedMediaType(mediaType))
             throw IllegalStateException("Unsupported image format $mediaType")
 
-        if (ContentDetector.isAnimated(mediaType))
-            throw IllegalStateException("Scaling of animated images is not supported")
+        if (ContentDetector.isGif(mediaType)) {
+            return scaleGif(image, height, width)
+        }
 
         val imageType = ContentDetector.toImageType(mediaType)
             ?: throw IllegalStateException("Can't detect image type before scaling")
 
-
-        val bufferedImage = ImageIO.read(image.inputStream())
-        val scaleTo = when {
-            height != null && width != null -> scaleDimensions(bufferedImage, height, width)
-            height != null -> scaleDimensionsByMaxHeight(bufferedImage, height)
-            else -> scaleDimensionsByMaxWidth(bufferedImage, width!!)
-        }
-        val resampled = ResampleOp(scaleTo.width, scaleTo.height, ResampleOp.FILTER_LANCZOS)
-            .filter(bufferedImage, null)
+        val resampled = scaleBufferedImage(ImageIO.read(image.inputStream()), height, width)
 
         val outputStream = ByteArrayOutputStream()
         ImageIO.write(resampled, imageType.imageIOFormat, outputStream)
@@ -39,6 +33,44 @@ object ImageConverter {
                 width = resampled.width
             ),
         )
+    }
+
+    private fun scaleGif(image: ByteArray, height: Int?, width: Int?): Image {
+        val decoder = GifDecoder()
+        val encoder = AnimatedGifEncoder()
+        decoder.read(image.inputStream())
+
+        val outputStream = ByteArrayOutputStream()
+        encoder.start(outputStream)
+
+        val firstFrame = scaleBufferedImage(decoder.getFrame(0), height, width)
+        encoder.setDelay(decoder.getDelay(0))
+        encoder.addFrame(firstFrame)
+        for (i in 1..<decoder.frameCount) {
+            val frame = decoder.getFrame(i)
+            val resampled = scaleBufferedImage(frame, height, width)
+            encoder.setDelay(decoder.getDelay(i))
+            encoder.addFrame(resampled)
+        }
+        encoder.finish()
+
+        return Image(
+            image = outputStream.toByteArray(),
+            dimensions = Dimensions(
+                height = firstFrame.height,
+                width = firstFrame.width
+            ),
+        )
+    }
+
+    private fun scaleBufferedImage(image: BufferedImage, height: Int?, width: Int?): BufferedImage {
+        val scaleTo = when {
+            height != null && width != null -> scaleDimensions(image, height, width)
+            height != null -> scaleDimensionsByMaxHeight(image, height)
+            else -> scaleDimensionsByMaxWidth(image, width!!)
+        }
+        return ResampleOp(scaleTo.width, scaleTo.height, ResampleOp.FILTER_LANCZOS)
+            .filter(image, null)
     }
 
     private fun scaleDimensions(from: BufferedImage, maxHeight: Int, maxWidth: Int): Dimensions {
