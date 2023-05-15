@@ -61,12 +61,12 @@ fun UserMessageView(
     message: UserMessage,
     model: ChatState,
 ) {
-    val channelEmotesState by model.channelEmotes.collectAsState()
-    val parsedMessage = remember(model.settings.isTimestampsEnabled, model.settings.timestampFormat) {
+    val channelEmotes by model.channelEmotes.collectAsState()
+    val parsedMessage = remember(model.settings.timestampFormat) {
         parseMessage(
             message,
-            if (model.settings.isTimestampsEnabled) model.settings.timestampFormat else null,
-            channelEmotesState,
+            model.settings.timestampFormat,
+            channelEmotes,
             model.connectionStatus.currentUser
         )
     }
@@ -161,12 +161,12 @@ fun ConnectionMessage(
 //TODO no selectable and clickable text for now https://github.com/JetBrains/compose-jb/issues/1450
 fun parseMessage(
     message: UserMessage,
-    timestampFormat: String?,
+    timestampFormat: String,
     channelEmotes: Map<String, ChatState.Emote>,
     currentUser: String?
 ): ParsedMessage {
     val messageDocument = Jsoup.parse(message.message, Parser.xmlParser())
-    val timestamp = timestampFormat?.let {
+    val timestamp = timestampFormat.ifBlank { null }?.let {
         DateTimeFormatter.ofPattern(it)
             .withZone(UTC)
             .format(message.timestamp)
@@ -177,7 +177,7 @@ fun parseMessage(
     var isMentioned = false
 
     val annotatedString = buildAnnotatedString {
-        timestamp?.let { append("[$it] ") }
+        timestamp?.let { append("$it ") }
         withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) { append(message.user) }
         append(":")
 

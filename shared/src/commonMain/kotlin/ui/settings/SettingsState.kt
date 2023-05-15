@@ -22,7 +22,6 @@ class SettingsState(
     var currentTab by mutableStateOf(CurrentTab.CHAT)
     var fontSize by mutableStateOf(13.sp)
     var emoteSize by mutableStateOf(120.sp)
-    var isTimestampsEnabled by mutableStateOf(false)
     var timestampFormat by mutableStateOf("")
     var historySize by mutableStateOf(0)
     var username by mutableStateOf<String?>(null)
@@ -37,7 +36,6 @@ class SettingsState(
             Settings(
                 fontSize = fontSize.value,
                 emoteSize = emoteSize.value,
-                isTimestampsEnabled = isTimestampsEnabled,
                 timestampFormat = timestampFormat,
                 historySize = historySize,
                 accountName = username,
