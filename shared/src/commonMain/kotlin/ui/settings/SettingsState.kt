@@ -25,6 +25,7 @@ class SettingsState(
     var timestampFormat by mutableStateOf("")
     var historySize by mutableStateOf(0)
     var username by mutableStateOf<String?>(null)
+    var allowGuestLogin by mutableStateOf(false)
     var syncThreshold by mutableStateOf(2000L)
     var isLoading by mutableStateOf(false)
 

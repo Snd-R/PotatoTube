@@ -67,6 +67,7 @@ class ChatState(
     }
 
     fun reset() {
+        showSettingsOverlay = false
         messages.value = emptyList()
         lastUserMessageTimestamp.value = null
         channelEmotes.value = emptyMap()

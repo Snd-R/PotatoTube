@@ -32,10 +32,14 @@ class HomePageState(
         cytubeClient.connectToDefaultPartition()
     }
 
-     suspend fun login() {
+    suspend fun login() {
         val username = settings.username
         val password = username?.let { settings.settingsRepository.loadPassword(it) }
-        if (username != null && password != null) {
+        if (username != null) {
+            if (password.isNullOrBlank()) {
+                settings.username = null
+                return
+            }
             try {
                 cytubeClient.login(username, password)
             } catch (e: Exception) {

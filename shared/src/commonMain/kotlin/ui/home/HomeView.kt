@@ -37,9 +37,10 @@ import kotlin.math.ceil
 
 @Composable
 fun HomePageView(state: HomePageState) {
-    LaunchedEffect(state.settings.username) {
+    LaunchedEffect(Unit) {
         state.connect()
         state.login()
+        state.settings.allowGuestLogin = false
     }
 
     val focusManager = LocalFocusManager.current

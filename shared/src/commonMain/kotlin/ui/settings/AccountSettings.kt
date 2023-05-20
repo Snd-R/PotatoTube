@@ -70,7 +70,9 @@ fun Login(model: SettingsState) {
     val textFieldModifier = Modifier.onPreviewKeyEvent {
         when {
             it.key == Key.Enter && it.type == KeyEventType.KeyDown -> {
-                login()
+                if (password == "" && !model.allowGuestLogin)
+                    loginError = "Guest login is not allowed on this screen"
+                else login()
                 true
             }
 

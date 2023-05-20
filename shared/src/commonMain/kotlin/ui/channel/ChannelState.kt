@@ -79,6 +79,7 @@ class ChannelState(
         connect()
         isInitialized = true
         chat.isLoading = false
+        settings.allowGuestLogin = true
     }
 
     suspend fun reconnect() {
@@ -102,6 +103,7 @@ class ChannelState(
             } catch (e: Exception) {
                 logger.error(e) { }
                 connectionStatus.disconnect(e.message)
+                chat.isLoading = false
             }
             login()
         }
@@ -110,7 +112,12 @@ class ChannelState(
     private suspend fun login() {
         val username = settings.username
         val password = username?.let { settings.settingsRepository.loadPassword(it) }
-        if (username != null && password != null) {
+        if (username != null) {
+            if (password.isNullOrBlank()) {
+                settings.username = null
+                return
+            }
+
             try {
                 cytube.login(username, password)
             } catch (e: Exception) {
