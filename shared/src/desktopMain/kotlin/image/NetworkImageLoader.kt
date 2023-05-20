@@ -10,17 +10,17 @@ import kotlin.coroutines.resumeWithException
 
 private val logger = KotlinLogging.logger {}
 
-class ImageLoaderDesktop(
+class NetworkImageLoader(
     private val client: OkHttpClient
 ) {
 
-    private val cache: DiscCache = DiscCache().apply { initialize() }
+    private val cache: DiskCache = DiskCache().apply { initialize() }
 
     suspend fun getImage(url: String): Result<ByteArray> {
         return try {
             val cached = cache.getImage(url)
             if (cached != null) {
-                logger.debug { "loading image from disc cache $url" }
+                logger.debug { "loading image from disk cache $url" }
                 return Result.Success(cached)
             }
             logger.debug { "loading image from network $url" }

@@ -88,8 +88,10 @@ kotlin {
                 implementation("com.github.javakeyring:java-keyring:1.0.2")
                 implementation("dev.dirs:directories:26")
 
-                implementation(project(":mpv"))
                 implementation("uk.co.caprica:vlcj:4.8.2")
+
+                implementation(project(":mpv"))
+                implementation(project(":gif_decoder"))
             }
         }
     }

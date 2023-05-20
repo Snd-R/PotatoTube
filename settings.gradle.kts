@@ -4,6 +4,7 @@ include(":androidApp")
 include(":shared")
 include(":desktopApp")
 include(":mpv")
+include("gif_decoder")
 
 pluginManagement {
     repositories {

@@ -7,11 +7,13 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
-class DiscCache {
+class DiskCache {
     private val cache = ConcurrentHashMap<String, Path>()
+
     private val cacheDirectory = Path.of(
         ProjectDirectories.from(
             "org", "snd", "PotatoTube"
@@ -35,13 +37,13 @@ class DiscCache {
 
     fun initialize() {
         Files.createDirectories(cacheDirectory)
-        Files.list(cacheDirectory).forEach {
-            cache[it.name] = it
-        }
+        Files.list(cacheDirectory)
+            .filter { !it.isDirectory() }
+            .forEach { cache[it.name] = it }
     }
 
     private fun getCacheKey(url: String): String {
         val uri = URI.create(url)
-        return "${uri.host}_${uri.path.split("/").joinToString("_")}"
+        return "${uri.host}${uri.path.split("/").joinToString("_")}"
     }
 }

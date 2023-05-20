@@ -1,99 +1,107 @@
 package image
 
-import com.madgag.gif.fmsware.AnimatedGifEncoder
-import com.madgag.gif.fmsware.GifDecoder
 import com.twelvemonkeys.image.ResampleOp
+import image.ScaledBufferedImageFrames.ScaledBufferedImageFrame
+import org.snd.gifdecoder.StandardGifDecoder
 import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
 object ImageConverter {
-    fun scaleImage(image: ByteArray, height: Int?, width: Int?): Image {
+
+    fun scaleImage(
+        encodedImage: ByteArray,
+        height: Int?,
+        width: Int?,
+    ): BufferedImage {
         if (height == null && width == null) throw IllegalStateException("scale height and width cannot be null")
 
-        val mediaType = ContentDetector.getMediaType(image)
+        val mediaType = ContentDetector.getMediaType(encodedImage)
         if (!ContentDetector.isSupportedMediaType(mediaType))
             throw IllegalStateException("Unsupported image format $mediaType")
 
-        if (ContentDetector.isGif(mediaType)) {
-            return scaleGif(image, height, width)
-        }
-
-        val imageType = ContentDetector.toImageType(mediaType)
-            ?: throw IllegalStateException("Can't detect image type before scaling")
-
-        val resampled = scaleBufferedImage(ImageIO.read(image.inputStream()), height, width)
-
-        val outputStream = ByteArrayOutputStream()
-        ImageIO.write(resampled, imageType.imageIOFormat, outputStream)
-        return Image(
-            image = outputStream.toByteArray(),
-            dimensions = Dimensions(
-                height = resampled.height,
-                width = resampled.width
-            ),
-        )
+        return scaleBufferedImage(ImageIO.read(encodedImage.inputStream()), height, width)
     }
 
-    private fun scaleGif(image: ByteArray, height: Int?, width: Int?): Image {
-        val decoder = GifDecoder()
-        val encoder = AnimatedGifEncoder()
-        decoder.read(image.inputStream())
+    fun scaleGif(image: ByteArray, height: Int?, width: Int?): ScaledBufferedImageFrames {
+        val frames = ArrayList<ScaledBufferedImageFrame>()
+        val gifDecoder = StandardGifDecoder()
+        gifDecoder.read(image)
+        gifDecoder.advance()
+        for (i in 0..<gifDecoder.frameCount) {
+            val currentFrame = gifDecoder.nextFrame
+            val resampled = scaleBufferedImage(currentFrame, height, width)
+            val currentFrameIndex = gifDecoder.currentFrameIndex
+            val delay = gifDecoder.getDelay(currentFrameIndex)
 
-        val outputStream = ByteArrayOutputStream()
-        encoder.start(outputStream)
-
-        val firstFrame = scaleBufferedImage(decoder.getFrame(0), height, width)
-        encoder.setDelay(decoder.getDelay(0))
-        encoder.addFrame(firstFrame)
-        for (i in 1..<decoder.frameCount) {
-            val frame = decoder.getFrame(i)
-            val resampled = scaleBufferedImage(frame, height, width)
-            encoder.setDelay(decoder.getDelay(i))
-            encoder.addFrame(resampled)
+            frames.add(
+                ScaledBufferedImageFrame(
+                    data = resampled,
+                    delay = delay
+                )
+            )
+            gifDecoder.advance()
         }
-        encoder.finish()
 
-        return Image(
-            image = outputStream.toByteArray(),
-            dimensions = Dimensions(
-                height = firstFrame.height,
-                width = firstFrame.width
-            ),
+        val scaledDimensions = getScaleDimensions(gifDecoder.height, gifDecoder.width, height, width)
+
+        return ScaledBufferedImageFrames(
+            frames = frames,
+            width = scaledDimensions.width,
+            height = scaledDimensions.height
         )
     }
 
     private fun scaleBufferedImage(image: BufferedImage, height: Int?, width: Int?): BufferedImage {
-        val scaleTo = when {
-            height != null && width != null -> scaleDimensions(image, height, width)
-            height != null -> scaleDimensionsByMaxHeight(image, height)
-            else -> scaleDimensionsByMaxWidth(image, width!!)
-        }
+        val scaleTo = getScaleDimensions(image.height, image.width, height, width)
         return ResampleOp(scaleTo.width, scaleTo.height, ResampleOp.FILTER_LANCZOS)
             .filter(image, null)
     }
 
-    private fun scaleDimensions(from: BufferedImage, maxHeight: Int, maxWidth: Int): Dimensions {
-        val bestRatio = (maxWidth / from.width.toFloat()).coerceAtMost(maxHeight / from.height.toFloat())
-        return Dimensions(
-            width = (from.width * bestRatio).toInt(),
-            height = (from.height * bestRatio).toInt()
+    private fun getScaleDimensions(srcHeight: Int, srcWidth: Int, height: Int?, width: Int?): ImageDimensions {
+        return when {
+            height != null && width != null -> scaleDimensions(srcHeight, srcWidth, height, width)
+            height != null -> scaleDimensionsByMaxHeight(srcHeight, srcWidth, height)
+            else -> scaleDimensionsByMaxWidth(srcHeight, srcWidth, width!!)
+        }
+    }
+
+    private fun scaleDimensions(srcHeight: Int, srcWidth: Int, maxHeight: Int, maxWidth: Int): ImageDimensions {
+        val bestRatio = (maxWidth / srcWidth.toFloat()).coerceAtMost(maxHeight / srcHeight.toFloat())
+        return ImageDimensions(
+            width = (srcWidth * bestRatio).toInt(),
+            height = (srcHeight * bestRatio).toInt()
         )
     }
 
-    private fun scaleDimensionsByMaxHeight(from: BufferedImage, maxHeight: Int): Dimensions {
-        val ratio = maxHeight.toDouble() / from.height
-        return Dimensions(
-            width = (from.width * ratio).toInt(),
-            height = (from.height * ratio).toInt()
+    private fun scaleDimensionsByMaxHeight(srcHeight: Int, srcWidth: Int, maxHeight: Int): ImageDimensions {
+        val ratio = maxHeight.toDouble() / srcHeight
+        return ImageDimensions(
+            width = (srcWidth * ratio).toInt(),
+            height = (srcHeight * ratio).toInt()
         )
     }
 
-    private fun scaleDimensionsByMaxWidth(from: BufferedImage, maxWidth: Int): Dimensions {
-        val ratio = maxWidth.toDouble() / from.width
-        return Dimensions(
-            width = (from.width * ratio).toInt(),
-            height = (from.height * ratio).toInt()
+    private fun scaleDimensionsByMaxWidth(srcHeight: Int, srcWidth: Int, maxWidth: Int): ImageDimensions {
+        val ratio = maxWidth.toDouble() / srcWidth
+        return ImageDimensions(
+            width = (srcWidth * ratio).toInt(),
+            height = (srcHeight * ratio).toInt()
         )
     }
 }
+
+class ScaledBufferedImageFrames(
+    val frames: List<ScaledBufferedImageFrame>,
+    val width: Int,
+    val height: Int,
+) {
+    class ScaledBufferedImageFrame(
+        val data: BufferedImage,
+        val delay: Int
+    )
+}
+
+private class ImageDimensions(
+    val width: Int,
+    val height: Int
+)
