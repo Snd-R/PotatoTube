@@ -1,55 +1,50 @@
 package ui.poll
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import cytube.CytubeClient
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.Instant
 
 class PollState(
     private val cytube: CytubeClient,
 ) {
-    var currentPoll by mutableStateOf(false)
+    var currentPoll = MutableStateFlow(false)
 
-    var title by mutableStateOf("")
-    var timestamp by mutableStateOf(Instant.now())
-    var totalCount by mutableStateOf(0)
-    val options = mutableStateListOf<PollOption>()
-    var chosenOption by mutableStateOf<Int?>(null)
+    var title = MutableStateFlow("")
+    private var timestamp = MutableStateFlow(Instant.now())
+    var totalCount = MutableStateFlow(0)
+    val options = MutableStateFlow(emptyList<PollOption>())
+    var chosenOption = MutableStateFlow<Int?>(null)
 
-    var closed by mutableStateOf(false)
-    var showChatPoll by mutableStateOf(true)
+    var closed = MutableStateFlow(false)
+    var showChatPoll = MutableStateFlow(true)
 
     fun startNewPoll(poll: Poll) {
-        options.clear()
-        options.addAll(poll.options)
-        totalCount = poll.totalCount
-        title = poll.title
-        timestamp = poll.timestamp
-        currentPoll = true
-        closed = false
-        showChatPoll = true
-        chosenOption = null
+        options.value = poll.options
+        totalCount.value = poll.totalCount
+        title.value = poll.title
+        timestamp.value = poll.timestamp
+        currentPoll.value = true
+        closed.value = false
+        showChatPoll.value = true
+        chosenOption.value = null
     }
 
     fun vote(option: PollOption) {
         cytube.pollVote(option.index)
-        chosenOption = option.index
+        chosenOption.value = option.index
     }
 
     fun updatePoll(poll: Poll) {
-        options.clear()
-        options.addAll(poll.options)
-        totalCount = poll.totalCount
+        options.value = poll.options
+        totalCount.value = poll.totalCount
     }
 
     fun closeCurrent() {
-        closed = true
+        closed.value = true
     }
 
     fun hideChatPoll() {
-        showChatPoll = false
+        showChatPoll.value = false
     }
 }
 
@@ -62,7 +57,7 @@ data class PollOption(
 data class Poll(
     val title: String,
     val totalCount: Int,
-    val options: Collection<PollOption>,
+    val options: List<PollOption>,
     val timestamp: Instant,
     val initiator: String
 )

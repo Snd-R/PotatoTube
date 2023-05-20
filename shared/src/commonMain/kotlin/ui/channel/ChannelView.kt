@@ -146,7 +146,8 @@ private fun VideoPanel(model: ChannelState) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Spacer(Modifier.weight(1.0f))
 
-            if (model.poll.currentPoll) {
+            val currentPoll by model.poll.currentPoll.collectAsState()
+            if (currentPoll) {
                 Box(
                     modifier = Modifier
                         .padding(start = 10.dp, top = 10.dp)

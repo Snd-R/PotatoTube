@@ -24,12 +24,14 @@ import ui.common.AppTheme
 @Composable
 fun PollChatView(poll: PollState) {
     var expanded by remember { mutableStateOf(false) }
+    val title by poll.title.collectAsState()
+    val closed by poll.closed.collectAsState()
 
     Column(modifier = Modifier.padding(10.dp)) {
         Row {
             Column {
                 Row(modifier = Modifier.clickable { expanded = !expanded }) {
-                    if (poll.closed) Text("Poll ended", fontSize = 12.sp, modifier = Modifier.padding(top = 3.dp))
+                    if (closed) Text("Poll ended", fontSize = 12.sp, modifier = Modifier.padding(top = 3.dp))
                     else Text("Current Poll", fontSize = 12.sp, modifier = Modifier.padding(top = 3.dp))
                     Icon(
                         if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
@@ -38,7 +40,7 @@ fun PollChatView(poll: PollState) {
                         modifier = Modifier.size(20.dp)
                     )
                 }
-                Text(poll.title, modifier = Modifier.padding(start = 10.dp))
+                Text(title, modifier = Modifier.padding(start = 10.dp))
             }
 
             Spacer(Modifier.weight(1f))
@@ -61,6 +63,8 @@ fun PollChatView(poll: PollState) {
 
 @Composable
 fun PollMainView(poll: PollState) {
+    val title by poll.title.collectAsState()
+    val closed by poll.closed.collectAsState()
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
@@ -70,11 +74,11 @@ fun PollMainView(poll: PollState) {
     ) {
         Row(modifier = Modifier.padding(start = 5.dp, end = 5.dp, bottom = 5.dp)) {
             Text(
-                poll.title,
+                title,
                 modifier = Modifier.padding(start = 5.dp),
                 maxLines = 2,
             )
-            if (poll.closed) {
+            if (closed) {
                 Spacer(Modifier.weight(1f))
                 Icon(
                     Icons.Default.Block,
@@ -91,9 +95,14 @@ fun PollMainView(poll: PollState) {
 
 @Composable
 fun PollOptions(poll: PollState) {
-    poll.options.forEach {
-        val selected = poll.chosenOption == it.index
-        val percentage = if (it.count == 0) 0f else (poll.totalCount / it.count.toFloat()) * 100
+    val options by poll.options.collectAsState()
+    val chosenOption by poll.chosenOption.collectAsState()
+    val totalCount by poll.totalCount.collectAsState()
+    val closed by poll.closed.collectAsState()
+
+    options.forEach {
+        val selected = chosenOption == it.index
+        val percentage = if (it.count == 0) 0f else (totalCount / it.count.toFloat()) * 100
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 5.dp, start = 5.dp, end = 5.dp)
@@ -104,7 +113,7 @@ fun PollOptions(poll: PollState) {
                 shape = RoundedCornerShape(5.dp)
             )
             .background(color = if (selected) AppTheme.colors.backgroundLighter else AppTheme.colors.backgroundMedium)
-            .clickable(enabled = !poll.closed) { poll.vote(it) }
+            .clickable(enabled = !closed) { poll.vote(it) }
         ) {
             Text(
                 it.name,

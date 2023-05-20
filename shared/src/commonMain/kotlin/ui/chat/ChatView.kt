@@ -87,7 +87,9 @@ private fun MessageBox(model: ChatState, settings: SettingsState) {
             scrollState
         )
 
-        if (model.poll.currentPoll && model.poll.showChatPoll) {
+        val currentPoll by model.poll.currentPoll.collectAsState()
+        val showChatPoll by model.poll.showChatPoll.collectAsState()
+        if (currentPoll && showChatPoll) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
