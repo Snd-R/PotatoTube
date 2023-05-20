@@ -27,14 +27,15 @@ import ui.platform.Tooltip
 
 @Composable
 fun PlaylistView(model: PlaylistState) {
+    val items by model.items.collectAsState()
     Box(modifier = Modifier.fillMaxWidth()) {
         val scrollState = rememberLazyListState()
         Column {
             AddToQueueButton(model)
             PlaylistHeader(model)
             LazyColumn(state = scrollState) {
-                items(model.items.size) {
-                    PlaylistItem(model.items[it], it == 0)
+                items(items.size) {
+                    PlaylistItem(items[it], it == 0)
                 }
             }
         }
@@ -82,19 +83,22 @@ fun PlaylistItem(item: PlaylistItem, active: Boolean) {
 
 @Composable
 fun PlaylistHeader(model: PlaylistState) {
+    val itemCount by model.count.collectAsState()
+    val time by model.time.collectAsState()
     Box(
         modifier = Modifier
             .border(width = 1.dp, color = Color.LightGray)
             .padding(start = 3.dp)
             .fillMaxWidth()
     ) {
-        val itemsText = if (model.count == 1) "item" else "items"
-        Text("${model.count} $itemsText - ${model.time}")
+        val itemsText = if (itemCount == 1) "item" else "items"
+        Text("$itemCount $itemsText - $time")
     }
 }
 
 @Composable
 fun AddToQueueButton(model: PlaylistState) {
+    val locked by model.locked.collectAsState()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 3.dp)
@@ -103,12 +107,12 @@ fun AddToQueueButton(model: PlaylistState) {
         Icon(
             Icons.Default.Add,
             contentDescription = "Add",
-            tint = if (model.locked) MaterialTheme.colors.error else Color.White,
+            tint = if (locked) MaterialTheme.colors.error else Color.White,
             modifier = Modifier
                 .width(30.dp)
                 .height(30.dp)
                 .clickable(
-                    enabled = !model.locked
+                    enabled = !locked
                 ) {
                     showInput = !showInput
                 }
@@ -118,7 +122,7 @@ fun AddToQueueButton(model: PlaylistState) {
         val coroutineScope = rememberCoroutineScope()
         var queueAddState by remember { mutableStateOf<LoadState<Unit>?>(null) }
 
-        if (showInput && !model.locked) {
+        if (showInput && !locked) {
             OutlinedTextField(
                 value = text,
                 label = { Text("Media URL", fontSize = 14.sp) },

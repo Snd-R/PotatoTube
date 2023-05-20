@@ -78,9 +78,9 @@ class AppState(
         }
 
         override fun onPlaylistMeta(rawTime: Long, count: Int, time: String) {
-            channel.playlist.rawTime = rawTime
-            channel.playlist.count = count
-            channel.playlist.time = time
+            channel.playlist.rawTime.value = rawTime
+            channel.playlist.count.value = count
+            channel.playlist.time.value = time
         }
 
         override fun onDeletePlaylistItem(uid: Int) {
@@ -96,7 +96,7 @@ class AppState(
         }
 
         override fun onPlaylistLock(locked: Boolean) {
-            channel.playlist.locked = locked
+            channel.playlist.locked.value = locked
         }
 
         override fun onConnect() {
@@ -104,7 +104,6 @@ class AppState(
         }
 
         override fun onChannelJoin(channelName: String) {
-//        connectionStatus.hasConnectedBefore = true
             connectionStatus.currentChannel = channelName
             connectionStatus.disconnectReason = null
 
@@ -112,7 +111,6 @@ class AppState(
         }
 
         override fun onUserInitiatedDisconnect() {
-//        connectionStatus.hasConnectedBefore = false
             channel.disconnected()
         }
 

@@ -349,7 +349,7 @@ class CytubeClient(
         socket.on("moveVideo") {
             val response = it[0] as JSONObject
             val from = response.getInt("from")
-            val after = response.getString("after")
+            val after = response.optString("after")
             if (after == "prepend")
                 eventListeners.forEach { listener -> listener.onMoveVideoToStart(from) }
             else eventListeners.forEach { listener -> listener.onMoveVideo(from, after.toInt()) }

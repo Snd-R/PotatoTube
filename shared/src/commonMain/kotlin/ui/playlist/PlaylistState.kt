@@ -1,59 +1,71 @@
 package ui.playlist
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import cytube.CytubeClient
 import cytube.YOUTUBE_PREFIX
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 class PlaylistState(val cytube: CytubeClient) {
-    var rawTime by mutableStateOf(0L)
-    var count by mutableStateOf(0)
-    var time by mutableStateOf("")
-    var locked by mutableStateOf(false)
+    var rawTime = MutableStateFlow(0L)
+    var count = MutableStateFlow(0)
+    var time = MutableStateFlow("")
+    var locked = MutableStateFlow(false)
 
-    val items = mutableStateListOf<PlaylistItem>()
+    val items = MutableStateFlow(emptyList<PlaylistItem>())
 
     fun setPlaylist(newItems: List<PlaylistItem>) {
-        items.clear()
-        items.addAll(newItems)
+        items.value = newItems
     }
 
     fun addFirst(item: PlaylistItem) {
-        items.add(0, item)
+        items.update { listOf(item) + it }
     }
 
     fun addItem(item: PlaylistItem, after: Int) {
-        val insertIndex = items.indexOfFirst { it.uid == after } + 1
-        items.add(insertIndex, item)
+        items.update { oldItems ->
+            val newItems = ArrayList<PlaylistItem>(oldItems)
+            val insertIndex = newItems.indexOfFirst { it.uid == after } + 1
+            newItems.add(insertIndex, item)
+            newItems
+        }
     }
 
     fun deleteItem(uid: Int) {
-        items.removeIf { it.uid == uid }
+        items.update { items -> items.filter { it.uid != uid } }
     }
 
     fun moveAfter(from: Int, after: Int) {
-        val fromIndex = items.indexOfFirst { it.uid == from }
-        val item = items[fromIndex]
+        items.update { oldItems ->
+            val newItems = ArrayList<PlaylistItem>(oldItems)
+            val fromIndex = newItems.indexOfFirst { it.uid == from }
+            val item = newItems[fromIndex]
+            newItems.removeAt(fromIndex)
+            val toIndex = newItems.indexOfFirst { it.uid == after }
+            newItems.add(toIndex + 1, item)
 
-        items.removeAt(fromIndex)
-        val toIndex = items.indexOfFirst { it.uid == after }
-        items.add(toIndex + 1, item)
+            newItems
+        }
+
     }
 
     fun moveToStart(uid: Int) {
-        val itemIndex = items.indexOfFirst { it.uid == uid }
-        val item = items[itemIndex]
-        items.removeAt(itemIndex)
-        items.add(0, item)
+        items.update { oldItems ->
+            val newItems = ArrayList<PlaylistItem>(oldItems)
+
+            val itemIndex = newItems.indexOfFirst { it.uid == uid }
+            val item = newItems[itemIndex]
+            newItems.removeAt(itemIndex)
+            newItems.add(0, item)
+
+            newItems
+        }
     }
 
     fun reset() {
-        items.clear()
-        rawTime = 0
-        count = 0
-        time = ""
+        items.value = emptyList()
+        rawTime.value = 0
+        count.value = 0
+        time.value = ""
     }
 }
 
@@ -62,8 +74,7 @@ data class PlaylistItem(
     val temp: Boolean,
     val queueBy: String,
     val media: MediaItem,
-) {
-}
+)
 
 data class MediaItem(
     val duration: String,
