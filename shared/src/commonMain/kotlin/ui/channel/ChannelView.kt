@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -199,17 +199,22 @@ private fun VideoPlayer(model: ChannelState, scrollState: ScrollState) {
         if (windowSize != WindowSize.FULL && windowSize != WindowSize.EXPANDED
             && maxScroll > 50.dp && scrollState.canScrollForward
         ) {
-            TextButton(
-                modifier =
-                if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)
-                else Modifier.align(Alignment.BottomCenter),
-                onClick = {
-                    coroutineScope.launch {
-                        scrollState.animateScrollTo(scrollState.maxValue)
+            Icon(
+                Icons.Default.ArrowDownward,
+                contentDescription = "Scroll Down",
+                tint = Color.White,
+                modifier = Modifier
+                    .size(30.dp)
+                    .clickable {
+                        coroutineScope.launch {
+                            scrollState.animateScrollTo(scrollState.maxValue)
+                        }
                     }
-                }) {
-                Text("Scroll down")
-            }
+                    .then(
+                        if (LocalOrientation.current == Orientation.PORTRAIT) Modifier.align(Alignment.BottomEnd)
+                        else Modifier.align(Alignment.BottomCenter)
+                    )
+            )
         }
     }
 }

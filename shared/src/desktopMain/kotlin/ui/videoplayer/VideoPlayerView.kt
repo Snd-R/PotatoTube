@@ -80,6 +80,7 @@ fun VideoControls(state: VideoPlayerState, modifier: Modifier = Modifier) {
     val time by state.timeState.time.collectAsState()
     val length by state.length.collectAsState()
     val isPlaying by state.isPlaying.collectAsState()
+    val orientation = LocalOrientation.current
 
     Column(modifier = modifier) {
         LinearProgressIndicator(
@@ -112,15 +113,17 @@ fun VideoControls(state: VideoPlayerState, modifier: Modifier = Modifier) {
                 "${state.currentTimeString()} / ${state.lengthString()}",
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
-            Spacer(Modifier.weight(1.0f))
-            Icon(
-                Icons.Default.FitScreen,
-                contentDescription = "Theatre Mode",
-                tint = Color.White,
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable { state.toggleTheaterMode() }
-            )
+            if (orientation == LANDSCAPE) {
+                Spacer(Modifier.weight(1.0f))
+                Icon(
+                    Icons.Default.FitScreen,
+                    contentDescription = "Theatre Mode",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable { state.toggleTheaterMode() }
+                )
+            }
         }
     }
 }
