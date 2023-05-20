@@ -363,7 +363,7 @@ fun HomeTopBar(state: HomePageState) {
 
 @Composable
 fun CurrentUserButton(state: HomePageState) {
-    val currentUser = state.settings.username ?: state.settings.connectionStatus.currentUser
+    val currentUser = state.settings.username ?: state.connectionStatus.currentUser.collectAsState().value
     val currentUserText = currentUser?.let { "Logged in as: $it" }
         ?: "Not logged in"
 

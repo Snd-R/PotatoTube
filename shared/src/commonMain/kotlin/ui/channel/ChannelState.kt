@@ -40,7 +40,7 @@ class ChannelState(
     fun disconnected() {
         if (settings.channel == null)
             reset()
-        else if (!connectionStatus.kicked && isInitialized)
+        else if (!connectionStatus.kicked.value && isInitialized)
             chat.addConnectionMessage(ConnectionMessage("Disconnected", DISCONNECTED))
     }
 
@@ -69,8 +69,8 @@ class ChannelState(
     }
 
     suspend fun init() {
-        if (connectionStatus.currentChannel == settings.channel
-            && connectionStatus.currentUser == settings.username
+        if (connectionStatus.currentChannel.value == settings.channel
+            && connectionStatus.currentUser.value == settings.username
         ) return
 
         isInitialized = false
@@ -84,7 +84,7 @@ class ChannelState(
 
     suspend fun reconnect() {
         val channel = settings.channel
-        if (isInitialized && channel != null && connectionStatus.currentChannel == null && !connectionStatus.kicked) {
+        if (isInitialized && channel != null && connectionStatus.currentChannel.value == null && !connectionStatus.kicked.value) {
             try {
                 cytube.joinChannel(channel)
             } catch (e: Exception) {

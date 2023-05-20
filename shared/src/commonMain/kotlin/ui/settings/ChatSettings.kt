@@ -1,12 +1,15 @@
 package ui.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,5 +65,15 @@ fun ChatSettings(settings: SettingsState) {
             },
             label = { Text("Timestamp format") },
         )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = settings.showUserConnectionMessages,
+                onCheckedChange = {
+                    settings.showUserConnectionMessages = !settings.showUserConnectionMessages
+                }
+            )
+            Text("Show User Connection Messages")
+        }
     }
 }

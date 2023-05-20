@@ -23,6 +23,7 @@ class SettingsState(
     var fontSize by mutableStateOf(13.sp)
     var emoteSize by mutableStateOf(120.sp)
     var timestampFormat by mutableStateOf("")
+    var showUserConnectionMessages by mutableStateOf(true)
     var historySize by mutableStateOf(0)
     var username by mutableStateOf<String?>(null)
     var allowGuestLogin by mutableStateOf(false)
@@ -41,7 +42,8 @@ class SettingsState(
                 historySize = historySize,
                 accountName = username,
                 player = playerType,
-                favoriteChannels = favoriteChannels.value
+                favoriteChannels = favoriteChannels.value,
+                showUserConnectionMessages = showUserConnectionMessages
             )
         )
     }

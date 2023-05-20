@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AccountSettings(model: SettingsState) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        val currentUser = model.username ?: model.connectionStatus.currentUser
+        val currentUser = model.username ?: model.connectionStatus.currentUser.collectAsState().value
         Row {
             Column {
                 Text("Account Settings")

@@ -1,23 +1,22 @@
 package ui
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class ConnectionStatus {
-    var currentUser by mutableStateOf<String?>(null)
-    var currentChannel by mutableStateOf<String?>(null)
-    var isGuest by mutableStateOf(false)
-    var kicked by mutableStateOf(false)
-    var disconnectReason by mutableStateOf<String?>(null)
+    var currentUser = MutableStateFlow<String?>(null)
+    var currentChannel = MutableStateFlow<String?>(null)
+    var rank = MutableStateFlow(-1.0)
+    var isGuest = MutableStateFlow(false)
+    var kicked = MutableStateFlow(false)
+    var disconnectReason = MutableStateFlow<String?>(null)
 
 
-    fun connectedAndAuthenticated() = currentUser != null && currentChannel != null
+    fun connectedAndAuthenticated() = currentUser.value != null && currentChannel.value != null
 
     fun disconnect(disconnectReason: String? = null) {
-        currentUser = null
-        currentChannel = null
-        this.disconnectReason = disconnectReason
+        currentUser.value = null
+        currentChannel.value = null
+        this.disconnectReason.value = disconnectReason
     }
 
 }

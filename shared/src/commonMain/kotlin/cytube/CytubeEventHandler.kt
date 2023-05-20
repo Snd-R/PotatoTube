@@ -10,6 +10,8 @@ interface CytubeEventHandler {
 
     fun onLoginSuccess(name: String, isGuest: Boolean = false) {}
 
+    fun onRank(rank: Double) {}
+
     fun onEmoteList(emotes: List<ChatState.Emote>) {}
 
     fun onUserList(users: List<ChatState.User>) {}

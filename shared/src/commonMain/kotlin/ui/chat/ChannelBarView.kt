@@ -32,7 +32,7 @@ fun ChannelBar(model: ChatState) {
             modifier = Modifier
                 .padding(horizontal = 5.dp, vertical = 5.dp),
         ) {
-            val currentChannel = model.connectionStatus.currentChannel
+            val currentChannel by model.connectionStatus.currentChannel.collectAsState()
             Box(
                 modifier = Modifier
                     .clickable { }
@@ -61,7 +61,7 @@ fun ChannelBar(model: ChatState) {
             }
         }
 
-        val connectionErrorReason = model.connectionStatus.disconnectReason
+        val connectionErrorReason by model.connectionStatus.disconnectReason.collectAsState()
         if (connectionErrorReason != null) {
             Text(
                 text = "$connectionErrorReason",

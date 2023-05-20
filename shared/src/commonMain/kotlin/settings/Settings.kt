@@ -10,6 +10,7 @@ data class Settings(
     val timestampFormat: String = "HH:mm:ss",
     val historySize: Int = 1000,
     val accountName: String? = null,
+    val showUserConnectionMessages: Boolean = true,
 
     val player: PlayerType? = null,
     val favoriteChannels: List<String> = emptyList()

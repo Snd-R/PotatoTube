@@ -67,7 +67,7 @@ fun UserMessageView(
             message,
             model.settings.timestampFormat,
             channelEmotes,
-            model.connectionStatus.currentUser
+            model.connectionStatus.currentUser.value
         )
     }
 

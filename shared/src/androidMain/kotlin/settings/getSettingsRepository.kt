@@ -8,7 +8,6 @@ actual fun getSettingsRepository(): SettingsRepository {
             return Settings(
                 fontSize = 13f,
                 emoteSize = 70f,
-                isTimestampsEnabled = false,
                 timestampFormat = "mm:ss",
                 player = PlayerType("")
             )

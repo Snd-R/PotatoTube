@@ -31,8 +31,12 @@ class AppState(
         }
 
         override fun onLoginSuccess(name: String, isGuest: Boolean) {
-            connectionStatus.currentUser = name
-            connectionStatus.isGuest = isGuest
+            connectionStatus.currentUser.value = name
+            connectionStatus.isGuest.value = isGuest
+        }
+
+        override fun onRank(rank: Double) {
+            connectionStatus.rank.value = rank
         }
 
         override fun onEmoteList(emotes: List<ChatState.Emote>) {
@@ -52,11 +56,11 @@ class AppState(
         }
 
         override fun onAddUser(user: ChatState.User) {
-            channel.chat.users.addUser(user)
+            channel.chat.addUser(user)
         }
 
         override fun onUserLeave(username: String) {
-            channel.chat.users.removeUser(username)
+            channel.chat.onUserLeave(username)
         }
 
         override fun onChangeMedia(url: String) {
@@ -104,8 +108,8 @@ class AppState(
         }
 
         override fun onChannelJoin(channelName: String) {
-            connectionStatus.currentChannel = channelName
-            connectionStatus.disconnectReason = null
+            connectionStatus.currentChannel.value = channelName
+            connectionStatus.disconnectReason.value = null
 
             channel.joinedChannel()
         }
@@ -124,7 +128,7 @@ class AppState(
         }
 
         override fun onKick(reason: String) {
-            connectionStatus.kicked = true
+            connectionStatus.kicked.value = true
             connectionStatus.disconnect()
             channel.kicked(reason)
         }

@@ -402,6 +402,12 @@ class CytubeClient(
             val image = response.getString("image")
             eventListeners.forEach { listener -> listener.onRemoveEmote(name, image) }
         }
+        socket.on("rank") {
+            val rank = it[0]
+            if (rank !is Number) throw IllegalStateException("Can't parse incoming rank value")
+
+            eventListeners.forEach { listener -> listener.onRank(rank.toDouble()) }
+        }
     }
 
     private fun parsePlaylistItem(json: JSONObject): PlaylistItem {

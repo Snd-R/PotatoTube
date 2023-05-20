@@ -34,6 +34,11 @@ class ChatState(
     var showSettingsOverlay by mutableStateOf(false)
 
     fun addUserMessage(message: Message.UserMessage) {
+        if (message.user == "[server]") {
+            addSystemMessage(message.message)
+            return
+        }
+
         val lastTimestamp = lastUserMessageTimestamp.value
         if (lastTimestamp != null && !message.timestamp.isAfter(lastTimestamp)) return
 
@@ -64,6 +69,21 @@ class ChatState(
         cytube.sendMessage(message)
         messageInput.sentMessages.add(message)
         messageInput.lastArrowCompletionIndex = null
+    }
+
+    fun addUser(user: User) {
+        users.addUser(user)
+        if (user.name != connectionStatus.currentUser.value &&
+            settings.showUserConnectionMessages &&
+            connectionStatus.rank.value < 2
+        )
+            addSystemMessage("${user.name} has joined")
+    }
+
+    fun onUserLeave(username: String) {
+        users.removeUser(username)
+        if (settings.showUserConnectionMessages)
+            addSystemMessage("$username has left")
     }
 
     fun reset() {
@@ -118,6 +138,7 @@ class ChatState(
     fun toggleUserList() {
         this.showUserList = !this.showUserList
     }
+
 
     fun setScrollState(state: Boolean) {
         this.isScrolledUp.value = state
